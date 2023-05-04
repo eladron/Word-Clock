@@ -21,8 +21,8 @@ String device_name = "ESP32-BT-Slave-ABCD";
 
 /* Wifi includes and globals */
 #include <WiFi.h>
-String ssid       = "176-19";
-String password   = "1234567890";
+String ssid       = "WifiRon";
+String password   = "ursula2110";
 
 void getNameandPass(String output)
 {
@@ -59,32 +59,24 @@ void setup() {
   setup_neopixel();
   SerialBT.begin(device_name);
   setup_time();
+  pixels.clear(); // Set all pixel colors to 'off'
+
 }
 
 void time_loop()
 {
-  pixels.clear(); // Set all pixel colors to 'off'
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
     return;
   }
   if ((millis() - time_timer) > time_timer_delay) {
-    printLocalTime();
+    clear_time_lights(); // TURN OF THE TIME LIGHTS
+    //printLocalTime();
     int hour = timeinfo.tm_hour;
     int minute = round_minute_to_nearest_five(timeinfo.tm_min);
     time_timer=millis();
+    light_time(hour);  
   }
-  /*
-  if ((millis() - time_timer) > time_timer_delay) {
-    for(int i=0; i<hour; i++) { // For each pixel...
-    
-        // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
-        // Here we're using a moderately bright green color:
-      pixels.setPixelColor(i, pixels.Color(0, 150, 0));
-    }
-    pixels.show();   // Send the updated pixel colors to the hardware.
-  }
-  */
 }
 
 void weather_loop()
@@ -93,9 +85,8 @@ void weather_loop()
     return;
   }
   if ((millis() - weather_timer) > 60000) {
-    if(WiFi.status()== WL_CONNECTED){
       String serverPath = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&APPID=" + openWeatherMapApiKey + "&units=metric";
-      
+      Serial.println(serverPath);
       jsonBuffer = httpGETRequest(serverPath.c_str());
       //Serial.println(jsonBuffer);
       JSONVar myObject = JSON.parse(jsonBuffer);
@@ -103,10 +94,11 @@ void weather_loop()
        if (JSON.typeof(myObject) == "undefined") {
         return;
       }
+      Serial.println(city);
       Serial.print(F("Temperature: "));
       Serial.println(myObject["main"]["temp"]);
-    }
-    weather_timer = millis();
+      temperature_to_color(myObject["main"]["temp"]);
+      weather_timer = millis();
   }
 }
 
@@ -114,16 +106,18 @@ void loop() {
   bluetooth_loop();
   if (WiFi.status() == WL_CONNECTED)
   {
-    //time_loop();
+    time_loop();
     weather_loop();
   }
   else{
     Serial.println("Not Connected to WIFI");
+    wifi_not_connected();
     if (!ssid.isEmpty() && !password.isEmpty()) {
       WiFi.begin(ssid.c_str(), password.c_str());
     }
     delay(1000);
     if (WiFi.status() == WL_CONNECTED) {
+      wifi_connected();
       Serial.println("Connected!");
     }
     // Light that we are not connected to wifi

@@ -20,8 +20,8 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #include "sntp.h"
 
 
-const char* ssid       = "StrongOne";
-const char* password   = "psagot21";
+const char* ssid       = "WifiRon";
+const char* password   = "ursula2110";
 
 const char* ntpServer1 = "pool.ntp.org";
 const char* ntpServer2 = "time.nist.gov";

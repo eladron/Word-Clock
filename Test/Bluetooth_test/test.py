@@ -36,6 +36,8 @@ def main():
     print(f"Bt name: {target_name}")
     target_address = find_target(target_name)
     while target_address is None:
+        code = input("Enter Clock code: ")
+        target_name = 'ESP32-BT-Slave-' + code
         target_address = find_target(target_name)
 
     # Establish a Bluetooth connection with the target device
