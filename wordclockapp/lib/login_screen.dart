@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'signup_screen.dart';
 import 'home_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'reusable_widgets/reusable_widgets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -12,10 +14,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _isHidden = true;
   bool _rememberMe = false;
+  final GlobalKey<FormState> _form = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _storage = FlutterSecureStorage();
-
+  final _storage = const FlutterSecureStorage();
+  String _errorMessage = '';
   @override
   void initState() {
     super.initState();
@@ -53,12 +56,46 @@ class _LoginScreenState extends State<LoginScreen> {
       await _storage.delete(key: 'email');
       await _storage.delete(key: 'password');
     }
-    print(_emailController.text);
-    print(_passwordController.text);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
-    );
+    String email = _emailController.text;
+    String password = _passwordController.text;
+    print(email);
+    print(password);
+    print("trying to log in");
+    FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: email, password: password)
+        .then((value) {
+          _errorMessage = '';
+          print("successful log in");
+          Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
+    }).catchError((error) {
+      if (error is FirebaseAuthException) {
+        String errorCode = error.code;
+        switch (errorCode) {
+          case 'invalid-email':
+            _errorMessage = 'Invalid email format';
+            break;
+          case 'user-not-found':
+            _errorMessage = 'Wrong credentials try again';
+            break;
+          case 'user-disabled':
+            _errorMessage = 'User account has been disabled';
+            break;
+          case 'wrong-password':
+            _errorMessage = 'Wrong credentials try again';
+            break;
+          default:
+            _errorMessage = error.message!;
+        }
+        setState(() {});
+      } else {
+        print('login failed: ${error.toString()}');
+      }
+
+    });
+
   }
 
   void _togglePasswordVisibility() {
@@ -75,45 +112,61 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            Form(
+              key: _form,
               child: Column(
-                children: <Widget>[
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.person),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.grey, width:2)
-                      ),
-                      labelText: 'Email',
-                    ),
-                  ),
-                  const SizedBox(height: 16.0),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _isHidden,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.grey, width:2)
-                      ),
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.security),
-                      suffixIcon: InkWell(
-                        onTap: _togglePasswordVisibility,
-                        child: Icon(
-                          _isHidden ? Icons.visibility_off : Icons.visibility,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      children: <Widget>[
+                        reusableTextForm('Email', Icons.email, _emailController),
+                        const SizedBox(height: 16.0),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _isHidden,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: const BorderSide(color: Colors.grey, width:2)
+                            ),
+                            labelText: 'Password',
+                            prefixIcon: const Icon(Icons.security),
+                            suffixIcon: InkWell(
+                              onTap: _togglePasswordVisibility,
+                              child: Icon(
+                                _isHidden ? Icons.visibility_off : Icons.visibility,
+                              ),
+                            ),
+                          ),
+                          validator: (val) {
+                            if (val != null && val.isEmpty){
+                              return 'Password is required';
+                            }
+                            return null;
+                          },
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ],
-              ),
+              )
+            ),
+            Text(
+              _errorMessage,
+              style: const TextStyle(color: Colors.red),
             ),
             ElevatedButton(
-              onPressed: _login,
+              onPressed: () {
+                if (_form.currentState!.validate()) {
+                  _login();
+                }
+                else {
+                  _errorMessage = '';
+                  setState(() {
+                  });
+                }
+              },
               child: const Text('Login'),
             ),
             Checkbox(
@@ -128,10 +181,15 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(
+            _errorMessage = '';
+            _emailController.text = '';
+            _passwordController.text = '';
+            setState(() {
+            });
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => SignUpScreen()),
-          );
+            );
         },
         icon: const Icon(Icons.person_add),
         label: const Text('Sign up'),
