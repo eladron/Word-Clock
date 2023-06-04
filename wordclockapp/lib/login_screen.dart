@@ -61,18 +61,22 @@ class _LoginScreenState extends State<LoginScreen> {
     print(email);
     print(password);
     print("trying to log in");
-    FirebaseAuth.instance
-        .signInWithEmailAndPassword(email: email, password: password)
-        .then((value) {
-          _errorMessage = '';
-          print("successful log in");
-          Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-          );
-    }).catchError((error) {
-      if (error is FirebaseAuthException) {
-        String errorCode = error.code;
+    //Navigator.push(
+      //context,
+      //MaterialPageRoute(builder: (context) => HomeScreen()),
+    //);
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email,
+          password: password
+      );
+      _errorMessage = '';
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),);
+
+    } on FirebaseAuthException catch (e) {
+      String errorCode = e.code;
         switch (errorCode) {
           case 'invalid-email':
             _errorMessage = 'Invalid email format';
@@ -87,15 +91,10 @@ class _LoginScreenState extends State<LoginScreen> {
             _errorMessage = 'Wrong credentials try again';
             break;
           default:
-            _errorMessage = error.message!;
-        }
-        setState(() {});
-      } else {
-        print('login failed: ${error.toString()}');
+            _errorMessage = e.message!;
       }
-
-    });
-
+      setState(() {});
+    }
   }
 
   void _togglePasswordVisibility() {

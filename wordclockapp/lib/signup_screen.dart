@@ -18,15 +18,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  void _signUp() {
+  void _signUp() async {
     // Implement sign-up functionality here
-
-    FirebaseAuth.instance.createUserWithEmailAndPassword(email: _emailController.text, password: _passwordController.text).then((value) async {
+    String email = _emailController.text;
+    String username = _usernameController.text;
+    String password = _passwordController.text;
+    await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password).then((value) async {
       await FirebaseFirestore.instance.collection("users").doc(value.user!.uid).set( {
-        'email': _emailController.text,
-        'username': _usernameController.text,
+        'email': email,
+        'username': username,
         'devices': [],
       });
+      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+      User? user = value.user;
+      if (user != null){
+        print("updating display_name");
+        user.updateDisplayName(username);
+      }
       Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
     }).onError((error, stackTrace) {
       print("Error ${error.toString()}");
