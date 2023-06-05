@@ -21,9 +21,7 @@ class DeviceControlScreen extends StatefulWidget {
 }
 
 class _DeviceControlScreenState extends State<DeviceControlScreen> {
-  bool _isConnected = false;
   bool _isLoading = true;
-  late BluetoothDevice _device;
   late BluetoothConnection _connection;
   String _deviceCode = '';
   final TextEditingController _wifiNameController = TextEditingController();
@@ -38,28 +36,43 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
 
   Future<void> _sendLocation() async {
 
-    print("Starting to send location");
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-    double latitude = position.latitude;
-    double longitude = position.longitude;
+    String location0 = "";
     String? city = "";
     String? countryCode = "";
-    await placemarkFromCoordinates(
-        position!.latitude, position!.longitude)
-        .then((List<Placemark> placemarks) {
-      Placemark place = placemarks[0];
-      setState(() {
-        city = place.locality;
-        countryCode = place.isoCountryCode;});
-    }).catchError((e) {
-      debugPrint(e);
-    });
 
-    print(city);
-    print(countryCode);
-    String message = 'City=$city';
+    CollectionReference devicesCollection = FirebaseFirestore.instance
+        .collection('devices');
+    await devicesCollection
+        .where('Name', isEqualTo: widget.deviceName).where(
+        'email', isEqualTo: FirebaseAuth.instance.currentUser?.email)
+        .get().then((QuerySnapshot querySnapshot) {
+      String location = querySnapshot.docs.first['Location'];
+      setState(() {
+        location0 = location;
+      });
+    });
+    if (location0 == 'Auto') {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      await placemarkFromCoordinates(
+          position!.latitude, position!.longitude)
+          .then((List<Placemark> placemarks) {
+        Placemark place = placemarks[0];
+        setState(() {
+          city = place.locality;
+          countryCode = place.isoCountryCode;
+        });
+      }).catchError((e) {
+        debugPrint(e);
+      });
+    }
+    else {
+      List<String> places = location0.split(',');
+      city = places[0].trim();
+      countryCode = places[1].trim();
+    }
+    String message = 'City=$city+Code=$countryCode';
     // Send the message over Bluetooth here
     _connection.output.add(Uint8List.fromList(utf8.encode(message)));
   }
@@ -83,7 +96,6 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
       _connection = await BluetoothConnection.toAddress(address);
       if (_connection.isConnected) {
         setState(() {
-          _isConnected = true;
           _isLoading = false;
         });
         _sendLocation();
@@ -96,20 +108,20 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
         builder: (context) {
           return AlertDialog(
             title: Text('Error'),
-            content: Text(
+            content: const Text(
                 'Can\'t connect to device. Would you like to try again?'),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.pop(context, false);
                 },
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context, true);
                 },
-                child: Text('Try Again'),
+                child: const Text('Try Again'),
               ),
             ],
           );
@@ -134,15 +146,12 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
     Navigator.pop(context);
   }
 
-
-
   void _setDeviceNetwork() {
-    print("Set Device Network");
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Network Settings'),
+          title: const Text('Network Settings'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -172,13 +181,13 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
                 _connection.output.add(Uint8List.fromList(utf8.encode(message)));
                 Navigator.pop(context);
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
           ],
         );
@@ -191,16 +200,11 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
   }
 
   void _setDeviceLocation() async {
-    print('Set Device Weather');
-    String? selectedCity = await Navigator.push(
+    await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => LocationSettingScreen()),
+      MaterialPageRoute(builder: (context) => LocationSettingScreen(deviceName:widget.deviceName)),
     );
-    if (selectedCity != null) {
-      // Update the weather settings with the selected city
-      String message = 'City=$selectedCity';
-      _connection.output.add(Uint8List.fromList(utf8.encode(message)));
-    }
+    _sendLocation();
   }
 
   void _setPreferences() {
@@ -222,7 +226,9 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
         backgroundColor: Colors.blueGrey[300], // Change the background color
         body: _isLoading
             ? const Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            color: Colors.white,
+          ),
         )
             : GridView.count(
           crossAxisCount: 2,

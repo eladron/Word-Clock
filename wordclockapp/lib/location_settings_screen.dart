@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LocationSettingScreen extends StatefulWidget {
-  const LocationSettingScreen({Key? key}) : super(key: key);
+  final String deviceName;
+  const LocationSettingScreen({Key? key, required this.deviceName}) : super(key: key);
 
   @override
   _LocationSettingScreenState createState() => _LocationSettingScreenState();
@@ -14,7 +15,33 @@ class _LocationSettingScreenState extends State<LocationSettingScreen> {
   double _elevation = 0;
   int _selectedCardIndex = -1;
   String _selecetedCity = "";
-  bool is_start = true;
+  bool isStart = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _get_location_preferences();
+  }
+
+  void _get_location_preferences() async {
+    CollectionReference devicesCollection = FirebaseFirestore.instance
+        .collection('devices');
+    await devicesCollection
+        .where('Name', isEqualTo: widget.deviceName).where(
+        'email', isEqualTo: FirebaseAuth.instance.currentUser?.email)
+        .get().then((QuerySnapshot querySnapshot) {
+      String location = querySnapshot.docs.first['Location'];
+      setState(() {
+        if (location != 'Auto') {
+          setState(() {
+              isStart = false;
+            _enableChoose = true;
+            _selecetedCity = location;
+          });
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +66,7 @@ class _LocationSettingScreenState extends State<LocationSettingScreen> {
               onChanged: (value) {
                 setState(() {
                   _enableChoose = value!;
+                  _selecetedCity = '';
                   _elevation = _enableChoose ? 4 : 0;
                   _selectedCardIndex = 0;
                 });
@@ -60,7 +88,7 @@ class _LocationSettingScreenState extends State<LocationSettingScreen> {
                   return const CircularProgressIndicator();
                 }
                 final locations = snapshot.data!.docs;
-                if (is_start) {
+                if (isStart) {
                   _selecetedCity = locations.first['locations'].first;
                 }
                 return Expanded(
@@ -75,11 +103,14 @@ class _LocationSettingScreenState extends State<LocationSettingScreen> {
                         itemCount: locationsList.length,
                         itemBuilder: (context, index) {
                           final locationItem = locationsList[index];
+                          if (_selecetedCity == locationItem) {
+                            _selectedCardIndex = index;
+                          }
                           return GestureDetector(
                             onTap: () {
                               setState(() {
                                 _selectedCardIndex = index;
-                                is_start = false;
+                                isStart = false;
                               });
                             },
                             child: Card(
@@ -92,9 +123,8 @@ class _LocationSettingScreenState extends State<LocationSettingScreen> {
                                   setState(() {
                                     _selectedCardIndex = index;
                                     _selecetedCity = locationItem;
-                                    is_start = false;
+                                    isStart = false;
                                   });
-                                  print(locationItem);
                                 },
                               ),
                             ),
@@ -116,7 +146,6 @@ class _LocationSettingScreenState extends State<LocationSettingScreen> {
               // Save the selected location and navigate back to the previous screen
               final currentUser = FirebaseAuth.instance.currentUser;
               String location = _enableChoose ? _selecetedCity : "Auto";
-              print(location);
               if (currentUser != null) {
                 await FirebaseFirestore.instance
                     .collection('devices')
