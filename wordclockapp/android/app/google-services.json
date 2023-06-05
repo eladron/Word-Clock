@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "934487828713",
+    "project_id": "wordclock13-ff2d4",
+    "storage_bucket": "wordclock13-ff2d4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934487828713:android:8ebb3e9f4b96dda4112878",
+        "android_client_info": {
+          "package_name": "com.example.wordclockapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "934487828713-abatgcpusssa4ad3gnok0v8hlbqhfq6u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wordclockapp",
+            "certificate_hash": "b798080482eb7d5519e8a1837166349aa2acb055"
+          }
+        },
+        {
+          "client_id": "934487828713-2sktfnqvd80nvaoprlro8up2b96bf1a5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAht1nRjZnDc6saGe9JyTeMSs__dKQq7uI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "934487828713-2sktfnqvd80nvaoprlro8up2b96bf1a5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

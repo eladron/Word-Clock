@@ -71,6 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
           password: password
       );
       _errorMessage = '';
+      print("hello there ");
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),);

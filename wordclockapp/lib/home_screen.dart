@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'new_device_screen.dart';
 import 'login_screen.dart';
+import 'device_control_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -75,7 +76,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               title: Text(deviceName),
                               onTap: () {
                                 // Handle click event for device
-                                print(deviceName);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => DeviceControlScreen(deviceName: deviceName)),
+                                );
                               },
                             );
                           }).toList(),

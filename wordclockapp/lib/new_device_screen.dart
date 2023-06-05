@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'reusable_widgets/reusable_widgets.dart';
-import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 
 class AddDeviceScreen extends StatefulWidget {
@@ -16,6 +16,8 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   final TextEditingController _codeController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final GlobalKey<FormState> _form = GlobalKey<FormState>();
+  late bool _isLoading = false;
+
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +45,9 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                           }
                         },
                         child: const Text('Add Device'),
-                      )
+                      ),
+                      if (_isLoading)
+                        const CircularProgressIndicator(),
                     ],
                   ),
                 )
@@ -55,7 +59,6 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   }
 
   void _addNewDevice() async {
-    String uid = FirebaseAuth.instance.currentUser!.uid;
     CollectionReference devicesCollection = FirebaseFirestore.instance.collection('devices');
 
     final deviceCode = _codeController.text.trim();
@@ -81,45 +84,43 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
           const SnackBar(content: Text('You already have a device with that name!')));
       return;
     }
+    String address = codeToAddress(deviceCode);
+    print(codeToAddress(deviceCode));
 
-    // Check if Bluetooth is available on the device
-    final flutterBlue = FlutterBlue.instance;
-    bool isBluetoothAvailable = await flutterBlue.isAvailable;
-    if (!isBluetoothAvailable) {
+    bool? isAvailable = await FlutterBluetoothSerial.instance.isAvailable;
+    if (!isAvailable!) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Bluetooth is not available on this device!')));
       return;
     }
 
-    // Check if Bluetooth is turned on
-    bool isOn = await flutterBlue.isOn;
-    if (!isOn) {
+    bool? isOn = await FlutterBluetoothSerial.instance.isEnabled;
+    if (!isOn!) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Bluetooth is not turned on!')));
       return;
     }
 
-    print("hello there motherfucker");
-    // Scan for nearby Bluetooth devices
-    final scanResults = await flutterBlue.scan(timeout: const Duration(seconds: 5));
-    final foundDevices = await scanResults
-        .map((result) => result.device.name)
-        .where((name) => name == deviceBluetoothName)
-        .toList();
-    print("hello there");
-    if (foundDevices.isEmpty) {
+    try{
+      BluetoothConnection connection = await BluetoothConnection.toAddress(address);
+      if (connection.isConnected) {
+        print("Connected!");
+        connection.close();
+        connection.dispose();
+        await devicesCollection.add({
+          'Code': deviceCode,
+          'Name': deviceName,
+          'email': FirebaseAuth.instance.currentUser?.email,
+        });
+
+        Navigator.pop(context);
+      }
+    }
+    catch (exception)
+    {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No Bluetooth devices found!')));
+          const SnackBar(content: Text("Device haven't been found!")));
       return;
     }
-
-    // Add the device to the database
-    await devicesCollection.add({
-      'Code': deviceCode,
-      'Name': deviceName,
-      'email': FirebaseAuth.instance.currentUser?.email,
-    });
-
-    Navigator.pop(context);
   }
 }
