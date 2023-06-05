@@ -1,8 +1,8 @@
 #include "time.h"
 #include "sntp.h"
 
-const long  gmtOffset_sec = 7200;
-const int   daylightOffset_sec = 3600;
+long  gmtOffset_sec = 7200;
+const int   daylightOffset_sec = 0;
 unsigned long time_timer = 0;
 unsigned long time_timer_delay = 1000;
 

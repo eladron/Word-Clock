@@ -10,7 +10,7 @@
  */
 #include "BluetoothSerial.h"
 BluetoothSerial SerialBT;
-String device_name = "ESP32-BT-Slave-ABCD";
+String device_name = "WordClock-ABCD";
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
@@ -21,8 +21,8 @@ String device_name = "ESP32-BT-Slave-ABCD";
 
 /* Wifi includes and globals */
 #include <WiFi.h>
-String ssid       = "WifiRon";
-String password   = "ursula2110";
+String ssid       = "176-19";
+String password   = "1234567890";
 
 void getNameandPass(String output)
 {
@@ -32,8 +32,11 @@ void getNameandPass(String output)
 }
 
 void getCity(String output){
-  city = output.substring(5);
+  int index = output.indexOf("+");
+  city = output.substring(5, index);
+  countryCode = output.substring(index+6);
   Serial.println(city);
+  Serial.println(countryCode);
 }
 
 void bluetooth_loop()
@@ -43,6 +46,7 @@ void bluetooth_loop()
     Serial.println(output);
     if (output.indexOf(F("SSID")) == 0) {
       getNameandPass(output);
+      return;
     }
     if (output.indexOf((F("City")) == 0)) {
       getCity(output);
@@ -50,6 +54,7 @@ void bluetooth_loop()
     }
   }
 }
+
 
 /* End Bluetooth */
 void setup() {
@@ -81,11 +86,11 @@ void time_loop()
 
 void weather_loop()
 {
-  if (city.isEmpty()) {
+  if (city.isEmpty() || countryCode.isEmpty()) {
     return;
   }
   if ((millis() - weather_timer) > 60000) {
-      String serverPath = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&APPID=" + openWeatherMapApiKey + "&units=metric";
+      String serverPath = "http://api.openweathermap.org/data/2.5/weather?q=" + city +"," + countryCode +"&APPID=" + openWeatherMapApiKey + "&units=metric";
       Serial.println(serverPath);
       jsonBuffer = httpGETRequest(serverPath.c_str());
       //Serial.println(jsonBuffer);
@@ -97,6 +102,11 @@ void weather_loop()
       Serial.println(city);
       Serial.print(F("Temperature: "));
       Serial.println(myObject["main"]["temp"]);
+      int tmp = myObject["timezone"];
+      if (gmtOffset_sec != tmp) {
+        gmtOffset_sec = tmp;
+        configTime(gmtOffset_sec, 0, "pool.ntp.org", "time.nist.gov");
+      }
       temperature_to_color(myObject["main"]["temp"]);
       weather_timer = millis();
   }

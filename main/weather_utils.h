@@ -5,6 +5,7 @@
 String openWeatherMapApiKey = "87d845b0b6cf29baa1a73cc34b067a95";
 unsigned long weather_timer = 0;
 String city = "";
+String countryCode = "";
 String jsonBuffer;
 
 String httpGETRequest(const char* serverName) {
