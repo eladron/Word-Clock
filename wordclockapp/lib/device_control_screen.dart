@@ -33,7 +33,6 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
     _connectToDevice();
   }
 
-
   Future<void> _sendLocation() async {
 
     String location0 = "";
@@ -72,6 +71,8 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
       city = places[0].trim();
       countryCode = places[1].trim();
     }
+    //tz.Location? location = tz.getLocation("$city/$countryCode");
+    //print(location);
     String message = 'City=$city+Code=$countryCode';
     // Send the message over Bluetooth here
     _connection.output.add(Uint8List.fromList(utf8.encode(message)));
@@ -231,15 +232,15 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
           ),
         )
             : GridView.count(
-          crossAxisCount: 2,
-          padding: const EdgeInsets.all(16.0),
-          mainAxisSpacing: 16.0,
-          crossAxisSpacing: 16.0,
-          children: [
-            deviceSettingButton("Network Settings", Icons.wifi, () { _setDeviceNetwork(); }),
-            deviceSettingButton("Alarms", Icons.alarm, () { _setDeviceTime(); }),
-            deviceSettingButton("Location Settings", Icons.location_on, () { _setDeviceLocation(); }),
-            deviceSettingButton("Preferences ", Icons.settings , () { _setPreferences(); })
+              crossAxisCount: 2,
+              padding: const EdgeInsets.all(16.0),
+              mainAxisSpacing: 16.0,
+              crossAxisSpacing: 16.0,
+              children: [
+                deviceSettingButton("Network Settings", Icons.wifi, () { _setDeviceNetwork(); }),
+                deviceSettingButton("Alarms", Icons.alarm, () { _setDeviceTime(); }),
+                deviceSettingButton("Location Settings", Icons.location_on, () { _setDeviceLocation(); }),
+                deviceSettingButton("Preferences ", Icons.settings , () { _setPreferences(); })
           ],
         ),
       ),
