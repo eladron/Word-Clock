@@ -8,8 +8,7 @@ import 'dart:typed_data';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'location_settings_screen.dart';
-import 'package:timezone/timezone.dart' as tz;
-
+import 'Alarms_screen.dart';
 
 class DeviceControlScreen extends StatefulWidget {
   final String deviceName;
@@ -196,8 +195,11 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
     );
   }
 
-  void _setDeviceTime() {
-    print('Set Device Time');
+  void _setAlarms() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AlarmScreen(deviceName:widget.deviceName)),
+    );
   }
 
   void _setDeviceLocation() async {
@@ -238,7 +240,7 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
               crossAxisSpacing: 16.0,
               children: [
                 deviceSettingButton("Network Settings", Icons.wifi, () { _setDeviceNetwork(); }),
-                deviceSettingButton("Alarms", Icons.alarm, () { _setDeviceTime(); }),
+                deviceSettingButton("Alarms", Icons.alarm, () { _setAlarms(); }),
                 deviceSettingButton("Location Settings", Icons.location_on, () { _setDeviceLocation(); }),
                 deviceSettingButton("Preferences ", Icons.settings , () { _setPreferences(); })
           ],

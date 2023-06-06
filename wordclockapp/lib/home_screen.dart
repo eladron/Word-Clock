@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'new_device_screen.dart';
 import 'login_screen.dart';
 import 'device_control_screen.dart';
+import 'locations_settings.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -47,8 +48,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         child: Scaffold(
         appBar: AppBar(
           title: const Text('Home'),
+          backgroundColor: Colors.blueGrey[800], // Change the background color
         ),
-        body: TabBarView(
+          backgroundColor: Colors.blueGrey[300],
+          body: TabBarView(
           controller: _tabController,
           children: [
             // TODO: Add the HomePage content here
@@ -104,9 +107,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ],
               ),
             ),
-            // TODO: Add the Profile content here
-            const Center(
-              child: Text('Profile'),
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.location_on),
+                      onPressed: () {
+                        print("Loctaions Settings");
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LocationSettingsScreen()));
+                      },
+                      label: const Text('Loctaions Settings'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -120,12 +139,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           },
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
+              icon: Icon(Icons.devices_other),
+              label: 'Devices',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
+              icon: Icon(Icons.settings),
+              label: 'Settings',
             ),
           ],
         ),

@@ -94,6 +94,7 @@ class _LocationSettingScreenState extends State<LocationSettingScreen> {
                 }
                 return Expanded(
                   child: ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: locations.length,
                     itemBuilder: (context, index) {
                       final location = locations[index];
