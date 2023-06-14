@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flag/flag.dart';
+import 'package:text_scroll/text_scroll.dart';
 
 class LocationSettingsScreen extends StatefulWidget {
   @override
@@ -13,6 +15,8 @@ class LocationSettingsScreen extends StatefulWidget {
 class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
   final _searchController = TextEditingController();
   List<String> _cityList = [];
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -32,72 +36,84 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
         backgroundColor: Colors.blueGrey[300],
         body: TabBarView(
           children: [
-            Column(
-              children: [
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(
-                        Icons.location_city,
-                        color: Colors.grey
-                    ),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _searchController.clear();
-                          _cityList = [];
-                        });
-                      },
-                      icon: const Icon(Icons.clear),
-                    ),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.grey, width:2)
-                    ),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(
+                          Icons.search,
+                          color: Colors.grey
+                      ),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _cityList = [];
+                          });
+                        },
+                        icon: const Icon(Icons.clear),
+                      ),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(color: Colors.grey, width:2)
+                      ),
 
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                    hintText: 'Search For City',
-                    labelStyle: const TextStyle(
-                      color: Colors.grey,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: const BorderSide(
-                        color:  Colors.grey,
-                        width: 2,
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      hintText: 'Search For City',
+                      labelStyle: const TextStyle(
+                        color: Colors.grey,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: const BorderSide(
+                          color:  Colors.grey,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: _searchCity,
-                  child: Text('Search'),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _cityList.length,
-                    itemBuilder: (context, index) {
-                      final city = _cityList[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
-                        child: ListTile(
-                          leading: const Icon(Icons.location_city),
-                          title: Text(city),
-                          trailing: IconButton(
-                            onPressed: () async {
-                              await _addLocation(city);
-                            },
-                            icon: const Icon(Icons.add),
-                          ),
-                          onTap: () {},
-                        ),
-                      );
-                    },
+                  ElevatedButton(
+                    onPressed: _searchCity,
+                    child: const Text('Search'),
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _cityList.length,
+                      itemBuilder: (context, index) {
+                        final city = _cityList[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
+                          child: ListTile(
+                            leading: const Icon(Icons.location_city),
+                            title: Row(
+                              children: [
+                                Flag.fromString(_getCountryCode(city), height: 20, width: 30),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: TextScroll(city,
+                                    pauseBetween: const Duration(seconds:3),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            trailing: IconButton(
+                              onPressed: () async {
+                                await _addLocation(city);
+                              },
+                              icon: const Icon(Icons.add),
+                            ),
+                            onTap: () {},
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
             StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
@@ -124,7 +140,13 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                                   vertical: 5, horizontal: 16),
                               child: ListTile(
                                 leading: const Icon(Icons.location_city),
-                                title: Text(locationItem),
+                                title: Row(
+                                  children: [
+                                    Flag.fromString(_getCountryCode(locationItem), height: 20, width: 30),
+                                    const SizedBox(width: 10),
+                                    Text(locationItem),
+                                  ],
+                                ),
                                 trailing: IconButton(
                                   onPressed: () {
                                     _showRemoveLocationDialog(
@@ -163,6 +185,11 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
     }
   }
 
+  String _getCountryCode(String city) {
+    final parts = city.split(', ');
+    return parts.last;
+  }
+
   void _searchCity() async {
     final cityName = _searchController.text;
     final cityData = await getCityData(cityName);
@@ -173,6 +200,9 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
           content: Text('No results found. Please try again.'),
         ),
       );
+      setState(() {
+        _cityList = [];
+      });
       return;
     }
     for (final city in cityData) {
@@ -192,23 +222,23 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Remove Location'),
+          title: const Text('Remove Location'),
           content: SingleChildScrollView(
             child: ListBody(
-              children: <Widget>[
+              children: const <Widget>[
                 Text('Would you like to remove this location?'),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Remove'),
+              child: const Text('Remove'),
               onPressed: () {
                 _removeLocation(location, locationItem);
                 Navigator.of(context).pop();

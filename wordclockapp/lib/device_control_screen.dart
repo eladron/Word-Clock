@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import  'globals.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'reusable_widgets/reusable_widgets.dart';
-import 'dart:convert';
-import 'dart:typed_data';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'location_settings_screen.dart';
+import 'location_device_settings.dart';
 import 'Alarms_screen.dart';
 
 class DeviceControlScreen extends StatefulWidget {
@@ -21,7 +20,7 @@ class DeviceControlScreen extends StatefulWidget {
 
 class _DeviceControlScreenState extends State<DeviceControlScreen> {
   bool _isLoading = true;
-  late BluetoothConnection _connection;
+  //late BluetoothConnection _connection;
   String _deviceCode = '';
   final TextEditingController _wifiNameController = TextEditingController();
   final TextEditingController _wifiPasswordController = TextEditingController();
@@ -54,7 +53,7 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
         desiredAccuracy: LocationAccuracy.high,
       );
       await placemarkFromCoordinates(
-          position!.latitude, position!.longitude)
+          position.latitude, position.longitude)
           .then((List<Placemark> placemarks) {
         Placemark place = placemarks[0];
         setState(() {
@@ -74,7 +73,7 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
     //print(location);
     String message = 'City=$city+Code=$countryCode';
     // Send the message over Bluetooth here
-    _connection.output.add(Uint8List.fromList(utf8.encode(message)));
+    await sendString(message);
   }
 
   Future<void> _connectToDevice() async {
@@ -91,23 +90,22 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
       });
     });
 
-    String address = codeToAddress(_deviceCode);
+    address = codeToAddress(_deviceCode);
     try {
-      _connection = await BluetoothConnection.toAddress(address);
-      if (_connection.isConnected) {
-        setState(() {
-          _isLoading = false;
-        });
-        _sendLocation();
+        connection = await BluetoothConnection.toAddress(address);
+        if (connection.isConnected) {
+          setState(() {
+            _isLoading = false;
+          });
+          _sendLocation();
       }
     }
     catch (exception) {
-      print("caught");
       bool retry = await showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Error'),
+            title: const Text('Error'),
             content: const Text(
                 'Can\'t connect to device. Would you like to try again?'),
             actions: [
@@ -138,10 +136,10 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
 
   Future<void> _onBackPressed() async {
 
-    if (await _connection.isConnected) {
+    if (connection.isConnected) {
       // Disconnect from the Bluetooth device
-      _connection.close();
-      _connection.dispose();
+      connection.close();
+      connection.dispose();
     }
     Navigator.pop(context);
   }
@@ -172,13 +170,13 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
           ),
           actions: [
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 String wifiName = _wifiNameController.text;
                 String wifiPassword = _wifiPasswordController.text;
                 // Save the wifi settings here
                 String message = 'SSID=$wifiName+Password=$wifiPassword';
                 // Send the message over Bluetooth here
-                _connection.output.add(Uint8List.fromList(utf8.encode(message)));
+                await sendString(message);
                 Navigator.pop(context);
               },
               child: const Text('Save'),
@@ -211,7 +209,6 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
   }
 
   void _setPreferences() {
-    print('Preferences');
   }
 
   @override

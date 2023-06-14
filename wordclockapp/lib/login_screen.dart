@@ -8,6 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
+  final bool ignoreRememberMe;
+  const LoginScreen({Key? key, required this.ignoreRememberMe}) : super(key: key);
   _LoginScreenState createState() => _LoginScreenState();
 }
 
@@ -22,8 +24,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _loadRememberMe();
-    _loadUsernameAndPassword();
+    if (! widget.ignoreRememberMe) {
+      _loadRememberMe();
+      _loadUsernameAndPassword();
+    }
   }
 
   void _loadRememberMe() async {
@@ -58,20 +62,12 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     String email = _emailController.text;
     String password = _passwordController.text;
-    print(email);
-    print(password);
-    print("trying to log in");
-    //Navigator.push(
-      //context,
-      //MaterialPageRoute(builder: (context) => HomeScreen()),
-    //);
     try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email,
           password: password
       );
       _errorMessage = '';
-      print("hello there ");
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),);

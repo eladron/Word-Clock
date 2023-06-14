@@ -7,6 +7,8 @@ import 'device_control_screen.dart';
 import 'locations_settings.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -23,10 +25,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _tabController = TabController(length: 2, vsync: this);
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
-      print("im here");
       _displayName = currentUser.displayName ?? "";
       _email = currentUser.email ?? "";
-      print(_email);
     }
   }
 
@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
+      MaterialPageRoute(builder: (context) => const LoginScreen(ignoreRememberMe: true,)),
     );
   }
 
@@ -95,7 +95,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.add),
                       onPressed: () {
-                        print("create new device");
                         Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -115,13 +114,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.location_on),
                       onPressed: () {
-                        print("Loctaions Settings");
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => LocationSettingsScreen()));
                       },
-                      label: const Text('Loctaions Settings'),
+                      label: const Text('Locations Settings'),
                     ),
                   ),
                 ],
