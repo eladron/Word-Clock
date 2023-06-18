@@ -2,12 +2,16 @@
 #include "sntp.h"
 
 long  gmtOffset_sec = 7200;
-const int   daylightOffset_sec = 0;
-unsigned long time_timer = 0;
-unsigned long time_timer_delay = 1000;
+unsigned long time_timer = -1000;
+unsigned long time_timer_delay = -time_timer;
+int alarmCount = 0;
+bool isAlarm = false;
+int indexAlarm = -1;
+int stopIndex = -1;
+int last_hour = 0;
+int last_minute = 0;
 
-//const char* time_zone = "CET-1CEST,M3.5.0,M10.5.0/3";  // TimeZone rule for Europe/Rome including daylight adjustment rules (optional)
-
+const char* dayNames[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 void printLocalTime()
 {
@@ -44,7 +48,7 @@ void setup_time()
    * should be OK if your time zone does not need to adjust daylightOffset twice a year,
    * in such a case time adjustment won't be handled automagicaly.
    */
-  configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org", "time.nist.gov");
+  configTime(gmtOffset_sec, 0, "pool.ntp.org", "time.nist.gov");
   Serial.println("Time setup done");
 }
 
