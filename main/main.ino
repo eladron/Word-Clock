@@ -59,10 +59,7 @@ String getAlarm(int index) {
 }
 
 int findAlarm(String alarm) {
-  if (alarmCount == 0) {
-    return -1;
-  }
-  for (int i = 0; i< alarmCount; i++) {
+  for (int i = 0; i < alarmCount; i++) {
     if (alarm == getAlarm(i)) {
       return i;
     }
@@ -106,7 +103,7 @@ void stopAlarm(String alarm)
   if (currentAlarm != alarm) {
     return;
   }
-  stopIndex = indexAlarm;
+  alarmToStop = alarm;
 }
 
 void bluetooth_loop()
@@ -114,23 +111,33 @@ void bluetooth_loop()
   if (SerialBT.available()) {
     String output = SerialBT.readString();
     Serial.println(output);
+
+    // Update WIFI credentials
     if (output.indexOf(F("SSID")) == 0) {
       getNameandPass(output);
       preferences.putString("ssid", ssid);
       preferences.putString("password", password);
     }
+
+    // Change location
     else if (output.indexOf(F("City")) == 0) {
       getCity(output);
       preferences.putString("city", city);
       preferences.putString("countryCode", countryCode);
       weather_timer = 0;
     }
+
+    // Add alarm
     else if (output.indexOf(F("Alarm")) == 0) {
       addAlarm(output.substring(6));
     }
+
+    // Remove alarm
     else if (output.indexOf(F("RemoveAlarm")) == 0) {
       removeAlarm(output.substring(12));
     }
+
+    // Stop alarm
     else if (output.indexOf(F("StopAlarm")) == 0) {
       stopAlarm(output.substring(10));
     }
@@ -169,57 +176,71 @@ void time_loop()
   int hour = timeinfo.tm_hour;
   int minute = timeinfo.tm_min;
   String day = dayNames[timeinfo.tm_wday];
-  if ((millis() - time_timer) > time_timer_delay) {
-    //clear_time_lights(); // TURN OF THE TIME LIGHTS
-    time_timer=millis();
-    if (last_hour != hour || last_minute != minute) {
-      last_hour = hour;
-      last_minute = minute;
-      printLocalTime();
-      light_time(hour, minute);  
-    }
+
+  // If time changed
+  if (last_hour != hour || last_minute != minute) {
+    last_hour = hour;
+    last_minute = minute;
+    printLocalTime();
+    light_time(hour, minute);  
   }
+  alarm_loop(day, hour, minute);
+}
+
+// Feder
+void alarm_loop(String day, int hour, int minute)
+{
   if (alarmCount > 0) {
+
+    // Iterate over all the alarms.
     for (int i = 0; i < alarmCount; i++) {
       String alarmKey = "alarm" + String(i);
       String alarm = preferences.getString(alarmKey.c_str());
       int sub_index = alarm.indexOf("-");
       String alarmDay = alarm.substring(0, sub_index-1);
+
+      // Not the right day
       if (day != alarmDay) {
         continue;
       }
       int index = alarm.indexOf(":");
       int alarmHour = alarm.substring(sub_index+2,index).toInt();
+
+      //Not the right hour
       if (hour!= alarmHour) {
         continue;
       }
       int alarmMinute = alarm.substring(index+1).toInt();
+
+      // Not the right minute
       if (minute!= alarmMinute) {
         continue;
       }
+
+      // If we arrive here, it means that alarm i is the scheduled for now.
+      // indexAlarm is the index of the current alarm (which is scheduled for now).
       indexAlarm = i;
-      if (stopIndex != indexAlarm && stopIndex != -1) {
-        stopIndex = -1;
-      }
-      if (stopIndex == indexAlarm) {
+      if (alarm == alarmToStop) {
         if (isAlarmOn) {
           clear_alarm();
         }
         return;
       }
-      if (isAlarmOn) {
-        clear_alarm();
-      }
       else {
-        light_alarm();
+
+        // Bliping
+        if (isAlarmOn) {
+          clear_alarm();
+        }
+        else {
+          light_alarm();
+        }
+        return;
       }
-      return;
     }
-    if (indexAlarm != -1) {
-      indexAlarm = -1;
-      stopIndex = -1;
-      clear_alarm();
-    }
+    indexAlarm = -1;
+    alarmToStop = "";
+    clear_alarm();
   }
 }
 

@@ -188,6 +188,8 @@ void wifi_not_connected()
 {
   pixels.setPixelColor(WEATHERLIGHT, pixels.Color(0,0,0));
   pixels.setPixelColor(WIFILIGHT, WIFIOFF);
+  clear_time_lights();
+  clear_alarm();
   pixels.show();
 }
 

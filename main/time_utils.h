@@ -7,7 +7,7 @@ unsigned long time_timer_delay = -time_timer;
 int alarmCount = 0;
 bool isAlarm = false;
 int indexAlarm = -1;
-int stopIndex = -1;
+String alarmToStop = "";
 int last_hour = 0;
 int last_minute = 0;
 
