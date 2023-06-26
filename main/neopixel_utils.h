@@ -19,6 +19,15 @@
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 bool isAlarmOn = false;
 
+uint32_t day_words_color = pixels.Color(150, 0, 0);
+uint32_t day_asc_color = pixels.Color(0, 0, 150);
+uint32_t day_dsc_color = pixels.Color(0, 150, 0);
+int night_start_hour = -1;
+int night_start_min = -1;
+int night_end_hour = -1;
+int night_end_min = -1;
+
+
 #include "lights.h"
 
 void setup_neopixel()
@@ -44,24 +53,28 @@ void setLightinRange(int a, int b, uint32_t c = GREEN) {
 Sets the light in the words It,Is and O'clock
 */
 void setItIsOclock() {
-  pixels.setPixelColor(62, pixels.Color(150, 0 , 0));
-  pixels.setPixelColor(61, pixels.Color(150, 0 , 0));
-  setLightinRange(13,15);
+  pixels.setPixelColor(62, day_words_color);
+  pixels.setPixelColor(61, day_words_color);
+  setLightinRange(13,15, day_words_color);
 }
 
 void setMinutes(int minute) {
   // Past
-  auto specific_color = BLUE;
+  auto specific_color = day_asc_color;
+  auto words_color = day_words_color;
+  // if is_night
+  // { words_color = night_words_color;
+  // }
   if (5 <= minute && minute <= 30) {
-    setLightinRange(37,38);
+    setLightinRange(37,38, words_color);
   }
   // TO
   else if (31 <= minute) {
     if (minute <= 55) {
-      setLightinRange(44,44);
+      setLightinRange(44,44, words_color);
     }
     minute = 60 - minute;
-    specific_color = RED;
+    specific_color = day_dsc_color;
   }
   int specific = minute % 5;
   if (specific != 0) {
@@ -72,23 +85,23 @@ void setMinutes(int minute) {
   {
   case 5:
     /* code */
-    setLightinRange(48, 49);
+    setLightinRange(48, 49, words_color);
     break;
   case 10:
-    setLightinRange(57, 58);
+    setLightinRange(57, 58, words_color);
     break;
   case 15:
-    setLightinRange(50, 53);
+    setLightinRange(50, 53, words_color);
     break;
   case 20:
-    setLightinRange(54, 56);
+    setLightinRange(54, 56, words_color);
     break;
   case 25:
-    setLightinRange(48, 49);
-    setLightinRange(54, 56);
+    setLightinRange(48, 49, words_color);
+    setLightinRange(54, 56, words_color);
     break;
   case 30:
-    setLightinRange(59, 60);
+    setLightinRange(59, 60, words_color);
     break;
   default:
     break;
@@ -101,43 +114,44 @@ void setMinutes(int minute) {
 
 void setHour(int hour)
 {
+  auto words_color = day_words_color;
   switch (hour)
   {
   case 0:
-    setLightinRange(10, 12);
+    setLightinRange(10, 12, words_color);
     break;
   case 1:
-    setLightinRange(35, 36);
+    setLightinRange(35, 36, words_color);
     break;
   case 2:
-    setLightinRange(39, 40);
+    setLightinRange(39, 40, words_color);
     break;
   case 3:
-    setLightinRange(41, 43);
+    setLightinRange(41, 43, words_color);
     break;
   case 4:
-    setLightinRange(33, 34);
+    setLightinRange(33, 34, words_color);
     break;
   case 5:
-    setLightinRange(31, 32);
+    setLightinRange(31, 32, words_color);
     break;  
   case 6:
-    setLightinRange(23, 24);
+    setLightinRange(23, 24, words_color);
     break;
   case 7:
-    setLightinRange(25, 27);
+    setLightinRange(25, 27, words_color);
     break;
   case 8:
-    setLightinRange(28, 30);
+    setLightinRange(28, 30, words_color);
     break;
   case 9:
-    setLightinRange(21, 22);
+    setLightinRange(21, 22, words_color);
     break;
   case 10:
-    setLightinRange(19, 20);
+    setLightinRange(19, 20, words_color);
     break;
   case 11:
-    setLightinRange(16, 18);
+    setLightinRange(16, 18, words_color);
     break;  
   default:
     break;

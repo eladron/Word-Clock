@@ -106,6 +106,38 @@ void stopAlarm(String alarm)
   alarmToStop = alarm;
 }
 
+
+void setTheme(String theme)
+{
+  JSONVar my_json = JSON.parse(theme);
+  
+  JSONVar day_words_color_json = my_json["Day"]["Words"];
+  int day_words_color_red = day_words_color["Red"];
+  int day_words_color_green = day_words_color["Green"];
+  int day_words_color_blue = day_words_color["Blue"];
+  day_words_color = pixels.Color(day_words_color_red, day_words_color_green, day_words_color_blue);
+  
+  JSONVar day_asc_color_json = my_json["Day"]["Asc"];
+  int day_asc_color_red = day_asc_color["Red"];
+  int day_asc_color_green = day_asc_color["Green"];
+  int day_asc_color_blue = day_asc_color["Blue"];
+  day_asc_color = pixels.Color(day_asc_color_red, day_asc_color_green, day_asc_color_blue);
+  
+  JSONVar day_dsc_color_json = my_json["Day"]["Dsc"];
+  int day_dsc_color_red = day_dsc_color["Red"];
+  int day_dsc_color_green = day_dsc_color["Green"];
+  int day_dsc_color_blue = day_dsc_color["Blue"];
+  day_dsc_color = pixels.Color(day_dsc_color_red, day_dsc_color_green, day_dsc_color_blue);
+
+//  bool is_night_on = my_json["NightOn"];
+//
+//  if (is_night_on){
+//    String night_start_time = my_json["StartTime"];
+//    String night_end_time = my_json["EndTime"];
+//  }
+}
+
+
 void bluetooth_loop()
 {
   if (SerialBT.available()) {
@@ -144,6 +176,11 @@ void bluetooth_loop()
     else if (output.indexOf(F("StopAlarm")) == 0) {
       stopAlarm(output.substring(10));
     }
+
+    // Set Theme
+    else if (output.indexOf(F("Theme")) == 0) {
+      setTheme(output.substring(6));
+    } 
   }
 }
 
