@@ -117,6 +117,9 @@ void bluetooth_loop()
       getNameandPass(output);
       preferences.putString("ssid", ssid);
       preferences.putString("password", password);
+      WiFi.disconnect();
+      wifi_not_connected();
+      delay(1000);
     }
 
     // Change location
@@ -258,24 +261,33 @@ void weather_loop()
        if (JSON.typeof(myObject) == "undefined") {
         return;
       }
+      int temp = myObject["main"]["temp"];
       Serial.print("Country: ");
       Serial.print(countryCode);
       Serial.print(", City: ");
       Serial.println(city);
       Serial.print(F("Temperature: "));
-      Serial.println(myObject["main"]["temp"]);
-      int tmp = myObject["timezone"];
-      if (gmtOffset_sec != tmp) {
-        gmtOffset_sec = tmp;
+      Serial.println(temp);
+      int tz = myObject["timezone"];
+      if (gmtOffset_sec != tz) {
+        gmtOffset_sec = tz;
         preferences.putInt("gmtOffset", gmtOffset_sec);
         configTime(gmtOffset_sec, 0, "pool.ntp.org", "time.nist.gov");
       }
-      temperature_to_color(myObject["main"]["temp"]);
+      int wc = myObject["weather"][0]["id"];
+      Serial.print("wc = ");
+      Serial.println(wc);
+      if (currentTemperature != temp || weatherCondition != wc) {
+        currentTemperature = temp;
+        weatherCondition = wc;
+        setWeatherLights(temp, wc);
+      }
       weather_timer = millis();
   }
 }
 
 void loop() {
+  //show_all_lights();
   bluetooth_loop();
   if (WiFi.status() == WL_CONNECTED)
   {

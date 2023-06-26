@@ -7,6 +7,9 @@ unsigned long weather_timer = -60000;
 String city = "";
 String countryCode = "";
 String jsonBuffer;
+int currentTemperature = 0;
+int weatherCondition = 0;
+
 
 String httpGETRequest(const char* serverName) {
   WiFiClient client;

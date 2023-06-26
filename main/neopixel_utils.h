@@ -6,18 +6,20 @@
 #endif
 
 
-#define PIN        5 // On Trinket or Gemma, suggest changing this to 1
+#define PIN 26 // On Trinket or Gemma, suggest changing this to 1
 #define WEATHERLIGHT 2
 #define WIFILIGHT 5
 #define ALARMLIGHT 4
 #define CUBESLIGHT 10
-#define NUMPIXELS 65 // Popular NeoPixel ring size
-#define COLD pixels.Color(216, 173 ,230)
-#define WARM pixels.Color(70, 250, 22)
-#define WIFION pixels.Color(150, 0, 0)
-#define WIFIOFF pixels.Color(0, 150, 0)
+#define CLEARLIGHT 0
+#define CLOUDYLIGHT 1
+#define RAINLIGHT 2
+#define THUNDERLIGHT 3
+#define NUMPIXELS 63 // Popular NeoPixel ring size
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 bool isAlarmOn = false;
+
+#include "lights.h"
 
 void setup_neopixel()
 {
@@ -32,9 +34,9 @@ void setup_neopixel()
 }
 
 //Sets the light in range a and b
-void setLightinRange(int a, int b) {
+void setLightinRange(int a, int b, uint32_t c = GREEN) {
   for (int i=a; i<= b; i++) {
-    pixels.setPixelColor(i, pixels.Color(150, 0 , 0));
+    pixels.setPixelColor(i, c);
   }
 }
 
@@ -49,16 +51,21 @@ void setItIsOclock() {
 
 void setMinutes(int minute) {
   // Past
-  if (minute <= 30) {
+  auto specific_color = BLUE;
+  if (5 <= minute && minute <= 30) {
     setLightinRange(37,38);
   }
-  else {
-    setLightinRange(44,44);
+  // TO
+  else if (31 <= minute) {
+    if (minute <= 55) {
+      setLightinRange(44,44);
+    }
     minute = 60 - minute;
+    specific_color = RED;
   }
   int specific = minute % 5;
   if (specific != 0) {
-    setLightinRange(CUBESLIGHT-specific,9);
+    setLightinRange(CUBESLIGHT-specific,9, specific_color);
   }
   minute = minute - minute % 5;
   switch (minute)
@@ -86,7 +93,8 @@ void setMinutes(int minute) {
   default:
     break;
   }
-  if (minute != 0 && minute != 30) {
+  //Minutes
+  if (minute != 0 && minute != 30 && minute != 15) {
     setLightinRange(45,47);
   }
 }
@@ -139,7 +147,7 @@ void setHour(int hour)
 void clear_time_lights() 
 {
   for (int i=6; i<= 62; i++) {
-    pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+    pixels.setPixelColor(i, NONCOLOR);
   }
   pixels.show();
 }
@@ -158,10 +166,6 @@ void light_time(int hour, int minute)
 void temperature_to_color(int temp) 
 {
   Serial.println(temp);
-  int power = 1;
-  if (temp > 5 && temp < 30) {
-    power = 0.5;
-  }
   auto color = WARM;
   if (temp < 17.5) {
     color = COLD;
@@ -172,21 +176,43 @@ void temperature_to_color(int temp)
 
 void light_alarm() 
 {
-  pixels.setPixelColor(ALARMLIGHT, pixels.Color(0, 0, 150));
+  pixels.setPixelColor(ALARMLIGHT, YELLOW);
   pixels.show();
   isAlarmOn = true;
 }
 
 void clear_alarm() 
 {
-  pixels.setPixelColor(ALARMLIGHT, pixels.Color(0, 0, 0));
+  pixels.setPixelColor(ALARMLIGHT,NONCOLOR);
   pixels.show();
   isAlarmOn = false;  
 }
 
+void show_all_lights()
+{
+  for (int i=0; i < 10; i++) {
+    pixels.setPixelColor(i, WHITE);
+    pixels.show();
+    delay(500);
+  }
+  for (int i=0; i < 10; i++) {
+    pixels.setPixelColor(i, NONCOLOR);
+  }
+  pixels.show();
+  delay(500);
+}
+
+void clear_weather()
+{
+  for (int i=0; i<=3; i++) 
+  {
+    pixels.setPixelColor(i, NONCOLOR);
+  }
+}
+
 void wifi_not_connected() 
 {
-  pixels.setPixelColor(WEATHERLIGHT, pixels.Color(0,0,0));
+  clear_weather();
   pixels.setPixelColor(WIFILIGHT, WIFIOFF);
   clear_time_lights();
   clear_alarm();
@@ -196,5 +222,30 @@ void wifi_not_connected()
 void wifi_connected()
 {
   pixels.setPixelColor(WIFILIGHT, WIFION);
+  pixels.show();
+}
+
+void setWeatherLights(int temp, int wc) {
+  clear_weather();
+  int code = wc / 100;
+  //Clear
+  if (wc == 800) {
+    pixels.setPixelColor(CLEARLIGHT, CLEARCOLD);
+    if (temp >=23) {
+      pixels.setPixelColor(CLEARLIGHT, WARM);
+    }
+  }
+  else if (code == 8 || code == 7) {
+    pixels.setPixelColor(CLOUDYLIGHT, GREY);
+  }
+  else if (code == 6) {
+    pixels.setPixelColor(CLOUDYLIGHT, WHITE);
+  }
+  else if (code == 5 || code == 3) {
+    pixels.setPixelColor(RAINLIGHT, MIDNIGHTBLUE);
+  }
+  else {
+    pixels.setPixelColor(THUNDERLIGHT, THUNDER);
+  }
   pixels.show();
 }
