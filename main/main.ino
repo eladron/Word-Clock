@@ -106,28 +106,37 @@ void stopAlarm(String alarm)
   alarmToStop = alarm;
 }
 
+void printColor(int r, int g, int b)
+{
+  Serial.print("R:");
+  Serial.print(r);
+  Serial.print(" G:");
+  Serial.print(g);
+  Serial.print(" B:");
+  Serial.print(b);
+}
 
 void setTheme(String theme)
 {
+  Serial.println(theme);
   JSONVar my_json = JSON.parse(theme);
   
-  JSONVar day_words_color_json = my_json["Day"]["Words"];
-  int day_words_color_red = day_words_color["Red"];
-  int day_words_color_green = day_words_color["Green"];
-  int day_words_color_blue = day_words_color["Blue"];
-  day_words_color = pixels.Color(day_words_color_red, day_words_color_green, day_words_color_blue);
+  int day_words_color_red = my_json["Day"]["Words"]["Red"];
+  int day_words_color_green = my_json["Day"]["Words"]["Green"];
+  int day_words_color_blue = my_json["Day"]["Words"]["Blue"];
+  day_words_color = pixels.Color(day_words_color_green,day_words_color_red, day_words_color_blue);
+  printColor(day_words_color_red, day_words_color_green, day_words_color_blue);
   
-  JSONVar day_asc_color_json = my_json["Day"]["Asc"];
-  int day_asc_color_red = day_asc_color["Red"];
-  int day_asc_color_green = day_asc_color["Green"];
-  int day_asc_color_blue = day_asc_color["Blue"];
-  day_asc_color = pixels.Color(day_asc_color_red, day_asc_color_green, day_asc_color_blue);
+  int day_asc_color_red = my_json["Day"]["Asc"]["Red"];
+  int day_asc_color_green = my_json["Day"]["Asc"]["Green"];
+  int day_asc_color_blue = my_json["Day"]["Asc"]["Blue"];
+  day_asc_color = pixels.Color(day_asc_color_green, day_asc_color_red, day_asc_color_blue);
   
-  JSONVar day_dsc_color_json = my_json["Day"]["Dsc"];
-  int day_dsc_color_red = day_dsc_color["Red"];
-  int day_dsc_color_green = day_dsc_color["Green"];
-  int day_dsc_color_blue = day_dsc_color["Blue"];
-  day_dsc_color = pixels.Color(day_dsc_color_red, day_dsc_color_green, day_dsc_color_blue);
+  int day_dsc_color_red = my_json["Day"]["Dsc"]["Red"];
+  int day_dsc_color_green = my_json["Day"]["Dsc"]["Green"];
+  int day_dsc_color_blue = my_json["Day"]["Dsc"]["Blue"];
+  day_dsc_color = pixels.Color(day_dsc_color_green, day_dsc_color_red, day_dsc_color_blue);
+  light_time(last_hour,last_minute);
 
 //  bool is_night_on = my_json["NightOn"];
 //

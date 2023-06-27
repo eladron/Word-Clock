@@ -108,7 +108,7 @@ void setMinutes(int minute) {
   }
   //Minutes
   if (minute != 0 && minute != 30 && minute != 15) {
-    setLightinRange(45,47);
+    setLightinRange(45,47, words_color);
   }
 }
 
