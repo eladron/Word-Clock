@@ -68,9 +68,8 @@ class _LoginScreenState extends State<LoginScreen> {
           password: password
       );
       _errorMessage = '';
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),);
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+      const HomeScreen()), (Route<dynamic> route) => false);
 
     } on FirebaseAuthException catch (e) {
       String errorCode = e.code;
@@ -103,7 +102,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Log in')),
+      appBar: AppBar(
+        title: const Text("Log in"),
+        backgroundColor: Colors.blueGrey[800],
+      ),
+      backgroundColor: Colors.blueGrey[300],
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -119,6 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         reusableTextForm('Email', Icons.email, _emailController),
                         const SizedBox(height: 16.0),
                         TextFormField(
+                          keyboardType: TextInputType.emailAddress,
                           controller: _passwordController,
                           obscureText: _isHidden,
                           decoration: InputDecoration(
@@ -126,12 +130,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderRadius: BorderRadius.circular(20),
                                 borderSide: const BorderSide(color: Colors.grey, width:2)
                             ),
-                            labelText: 'Password',
-                            prefixIcon: const Icon(Icons.security),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            hintText: 'Password',
+                            hintStyle: const TextStyle(
+                              color: Colors.black54,
+                            ),
+                            prefixIcon: const Icon(Icons.security,
+                                color: Colors.grey
+                            ),
                             suffixIcon: InkWell(
                               onTap: _togglePasswordVisibility,
                               child: Icon(
-                                _isHidden ? Icons.visibility_off : Icons.visibility,
+                                _isHidden ? Icons.visibility_off : Icons.visibility, color: Colors.grey
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: const BorderSide(
+                                color: Colors.grey,
+                                width: 2,
                               ),
                             ),
                           ),
@@ -165,13 +183,29 @@ class _LoginScreenState extends State<LoginScreen> {
               },
               child: const Text('Login'),
             ),
-            Checkbox(
-              value: _rememberMe,
-              onChanged: (value) {
-                setState(() => _rememberMe = value!);
-              },
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(
+                  color: Colors.white,
+                  width: 2.0,
+                ),
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              padding: const EdgeInsets.all(8.0),
+              margin: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Column(
+                children: [
+                  Checkbox(
+                    value: _rememberMe,
+                    onChanged: (value) {
+                      setState(() => _rememberMe = value!);
+                    },
+                  ),
+                  const Text('Remember me'),
+                ],
+              ),
             ),
-            const Text('Remember me'),
           ],
         ),
       ),

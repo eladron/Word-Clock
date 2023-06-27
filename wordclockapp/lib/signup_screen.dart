@@ -56,7 +56,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign up')),
+      appBar: AppBar(title: const Text('Sign up'),
+        backgroundColor: Colors.blueGrey[800],
+      ),
+      backgroundColor: Colors.blueGrey[300],
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -79,14 +82,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 borderRadius: BorderRadius.circular(20),
                                 borderSide: const BorderSide(color: Colors.grey, width:2)
                             ),
-                            prefixIcon: const Icon(Icons.security),
+                            prefixIcon: const Icon(Icons.security, color: Colors.grey),
                             suffixIcon: InkWell(
                               onTap: _togglePasswordVisibility,
                               child: Icon(
                                 passHidden ? Icons.visibility_off : Icons.visibility,
+                                  color: Colors.grey
                               ),
                             ),
-                            labelText: 'Password',
+                            hintText: 'Password',
+                            hintStyle: const TextStyle(color: Colors.black54),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: const BorderSide(
+                                color: Colors.grey,
+                                width: 2,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16.0),
@@ -98,14 +112,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 borderRadius: BorderRadius.circular(20),
                                 borderSide: const BorderSide(color: Colors.grey, width:2)
                             ),
-                            prefixIcon: const Icon(Icons.security),
+                            prefixIcon: const Icon(Icons.security, color: Colors.grey,),
                             suffixIcon: InkWell(
                               onTap: _toggleConfPasswordVisibility,
                               child: Icon(
                                 confPassHidden ? Icons.visibility_off : Icons.visibility,
+                                color: Colors.grey
                               ),
                             ),
-                            labelText: 'Confirm Password',
+                            hintText: 'Confirm Password',
+                            hintStyle: const TextStyle(color: Colors.black54),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: const BorderSide(
+                                color: Colors.grey,
+                                width: 2,
+                              ),
+                            ),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {

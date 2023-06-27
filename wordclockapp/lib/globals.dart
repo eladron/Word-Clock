@@ -7,14 +7,31 @@ late String address;
 
 Future<int> sendString(String message) async
 {
-    if (!connection.isConnected) {
+  while (true)
+    {
       try {
-        connection = await BluetoothConnection.toAddress(address);
+        if(connection.isConnected) {
+          connection.output.add(Uint8List.fromList(utf8.encode(message)));
+          break;
+        }
+        else {
+          connection = await BluetoothConnection.toAddress(address);
+        }
       }
       catch (error) {
-        return 0;
       }
     }
-    connection.output.add(Uint8List.fromList(utf8.encode(message)));
-    return 1;
+    return 0;
+}
+
+
+Future<void> connect() async
+{
+  try {
+    connection = await BluetoothConnection.toAddress(address);
+
+  }
+  catch (error) {
+
+  }
 }

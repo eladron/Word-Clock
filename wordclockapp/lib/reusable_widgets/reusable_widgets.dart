@@ -1,25 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flag/flag.dart';
+import 'package:text_scroll/text_scroll.dart';
 
-TextFormField reusableTextForm(String text, IconData icon, TextEditingController controller, {Color pressedOnColor = Colors.lightBlue })
+TextFormField reusableTextForm(String text, IconData icon, TextEditingController controller)
 {
   return TextFormField(
     controller: controller,
     decoration: InputDecoration(
-      prefixIcon: Icon(icon),
+      prefixIcon: Icon(icon,
+          color: Colors.grey
+      ),
+
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
           borderSide: const BorderSide(color: Colors.grey, width:2)
       ),
+
       filled: true,
       fillColor: Colors.grey[200],
-      labelText: text,
-      labelStyle: TextStyle(
-        color: pressedOnColor,
+      hintText: text,
+      hintStyle: const TextStyle(
+        color: Colors.black54,
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(
-          color: pressedOnColor,
+        borderRadius: BorderRadius.circular(20),
+        borderSide: const BorderSide(
+          color: Colors.grey,
           width: 2,
         ),
       ),
@@ -32,6 +38,7 @@ TextFormField reusableTextForm(String text, IconData icon, TextEditingController
     },
   );
 }
+
 
 Card deviceSettingButton(String text, IconData icon, VoidCallback onPressedFunction)
 {
@@ -68,4 +75,18 @@ String codeToAddress(String code)
   newString = newString.substring(0, newString.length - 1); // remove the last dash
   print(newString);
   return newString;
+}
+
+class ThemeClass {
+  late final String name;
+  late final Color color1;
+  late final Color color2;
+  late final Color color3;
+
+  ThemeClass({
+    required this.name,
+    required this.color1,
+    required this.color2,
+    required this.color3,
+  });
 }

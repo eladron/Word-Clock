@@ -41,6 +41,7 @@ dependencies:
   flutter_date_pickers: ^0.4.2
   flag: ^6.0.0
   text_scroll: 0.2.0
+  flutter_colorpicker: ^1.0.0
 
 
 

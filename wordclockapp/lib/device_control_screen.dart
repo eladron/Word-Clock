@@ -7,6 +7,7 @@ import 'reusable_widgets/reusable_widgets.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'location_device_settings.dart';
+import 'device_prefrences.dart';
 import 'Alarms_screen.dart';
 
 class DeviceControlScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class DeviceControlScreen extends StatefulWidget {
 }
 
 class _DeviceControlScreenState extends State<DeviceControlScreen> {
-  bool _isLoading = true;
+  bool _isLoading = false;
   //late BluetoothConnection _connection;
   String _deviceCode = '';
   final TextEditingController _wifiNameController = TextEditingController();
@@ -203,12 +204,16 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
   void _setDeviceLocation() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => LocationSettingScreen(deviceName:widget.deviceName)),
+      MaterialPageRoute(builder: (context) => DeviceLocationsSettingScreen(deviceName:widget.deviceName)),
     );
     _sendLocation();
   }
 
-  void _setPreferences() {
+  void _setPreferences() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PreferencesScreen(deviceName:widget.deviceName)),
+    );
   }
 
   @override
@@ -221,9 +226,7 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.deviceName),
-          backgroundColor: Colors.blueGrey[800], // Change the background color
         ),
-        backgroundColor: Colors.blueGrey[300], // Change the background color
         body: _isLoading
             ? const Center(
           child: CircularProgressIndicator(

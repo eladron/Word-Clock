@@ -103,9 +103,15 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Word Clock',
-      home: LoginScreen(ignoreRememberMe: false,),
+      theme: ThemeData(
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.blueGrey[800], // Change the background color
+        ),
+        scaffoldBackgroundColor: Colors.blueGrey[300],
+      ),
+      home: const LoginScreen(ignoreRememberMe: false,),
     );
   }
 }

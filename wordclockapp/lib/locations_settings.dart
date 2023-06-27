@@ -88,7 +88,6 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
                           child: ListTile(
-                            leading: const Icon(Icons.location_city),
                             title: Row(
                               children: [
                                 Flag.fromString(_getCountryCode(city), height: 20, width: 30),
@@ -136,6 +135,30 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                         return Column(
                           children: locationsList.map((locationItem) {
                             return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
+                              child: ListTile(
+                                title: Row(
+                                  children: [
+                                    Flag.fromString(_getCountryCode(locationItem), height: 20, width: 30),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: TextScroll(locationItem,
+                                        pauseBetween: const Duration(seconds:3),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                trailing: IconButton(
+                                  onPressed: () {
+                                    _showRemoveLocationDialog(
+                                        location, locationItem);
+                                  },
+                                  icon: const Icon(Icons.remove),
+                                ),
+                                onTap: () {},
+                              ),
+                            );
+                            return Card(
                               margin: const EdgeInsets.symmetric(
                                   vertical: 5, horizontal: 16),
                               child: ListTile(
@@ -144,7 +167,7 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                                   children: [
                                     Flag.fromString(_getCountryCode(locationItem), height: 20, width: 30),
                                     const SizedBox(width: 10),
-                                    Text(locationItem),
+                                    TextScroll(locationItem),
                                   ],
                                 ),
                                 trailing: IconButton(

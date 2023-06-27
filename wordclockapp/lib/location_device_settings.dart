@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'locations_settings.dart';
+import 'package:flag/flag.dart';
+import 'package:text_scroll/text_scroll.dart';
 
-
-class LocationSettingScreen extends StatefulWidget {
+class DeviceLocationsSettingScreen extends StatefulWidget {
   final String deviceName;
-  const LocationSettingScreen({Key? key, required this.deviceName}) : super(key: key);
+  const DeviceLocationsSettingScreen({Key? key, required this.deviceName}) : super(key: key);
 
   @override
-  _LocationSettingScreenState createState() => _LocationSettingScreenState();
+  _DeviceLocationsSettingScreen createState() => _DeviceLocationsSettingScreen();
 }
 
-class _LocationSettingScreenState extends State<LocationSettingScreen> {
+class _DeviceLocationsSettingScreen extends State<DeviceLocationsSettingScreen> {
   bool _enableChoose = false;
   double _elevation = 0;
   int _selectedCardIndex = -1;
@@ -49,32 +51,56 @@ class _LocationSettingScreenState extends State<LocationSettingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Location Settings'),
-        backgroundColor: Colors.blueGrey[800], // Change the background color
       ),
-      backgroundColor: Colors.blueGrey[300], // Change the background color
       body: Column(
         children: [
           const SizedBox(height: 16),
-          Card(
-            elevation: _elevation,
-            margin: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: CheckboxListTile(
-              title: const Text('Customize Location'),
-              value: _enableChoose,
-              onChanged: (value) {
-                setState(() {
-                  _enableChoose = value!;
-                  _selecetedCity = '';
-                  _elevation = _enableChoose ? 4 : 0;
-                  _selectedCardIndex = 0;
-                });
-              },
-              activeColor: Colors.blueGrey[800], // Change the color of the check when the checkbox is selected
-              checkColor: Colors.white, // Change the color of the check icon
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Card(
+                    elevation: _elevation,
+                    margin: const EdgeInsets.only(top: 16, left:16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: CheckboxListTile(
+                      title: const Text('Customize Location'),
+                      value: _enableChoose,
+                      onChanged: (value) {
+                        setState(() {
+                          _enableChoose = value!;
+                          _selecetedCity = '';
+                          _elevation = _enableChoose ? 4 : 0;
+                          _selectedCardIndex = 0;
+                        });
+                      },
+                      activeColor: Colors.blueGrey[800], // Change the color of the check when the checkbox is selected
+                      checkColor: Colors.white, // Change the color of the check icon
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 16, right: 16),
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LocationSettingsScreen()),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                      ),
+                      color: Colors.blueGrey[800],
+                      iconSize: 24,
+                    ),
+                  ),
+                ),
+              ]
           ),
           const SizedBox(height: 16),
           Visibility(
@@ -119,8 +145,17 @@ class _LocationSettingScreenState extends State<LocationSettingScreen> {
                               margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
                               color: _selectedCardIndex == index ? Colors.blue : null,
                               child: ListTile(
-                                leading: const Icon(Icons.location_city),
-                                title: Text(locationItem),
+                                title: Row(
+                                  children: [
+                                    Flag.fromString((locationItem.split(", ").last), height: 20, width: 30),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: TextScroll(locationItem,
+                                        pauseBetween: const Duration(seconds:3),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 onTap: () {
                                   setState(() {
                                     _selectedCardIndex = index;

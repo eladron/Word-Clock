@@ -5,6 +5,7 @@ import 'new_device_screen.dart';
 import 'login_screen.dart';
 import 'device_control_screen.dart';
 import 'locations_settings.dart';
+import 'user_themes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,25 +33,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen(ignoreRememberMe: true,)),
-    );
+    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+        const LoginScreen(ignoreRememberMe: true,)), (Route<dynamic> route) => false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-        onWillPop: () async {
-          await signOut();
-          return true;
-        },
-        child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: const Text('Home'),
-          backgroundColor: Colors.blueGrey[800], // Change the background color
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: signOut,
+            ),
+          ],
         ),
-          backgroundColor: Colors.blueGrey[300],
           body: TabBarView(
           controller: _tabController,
           children: [
@@ -59,7 +57,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               child: Column(
                 children: [
                   Container(height: 30),
-                  const Text("My Devices"),
+                  const Text("My Devices",
+                    style: TextStyle(
+                      fontSize: 20
+                    )),
                   StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('devices')
@@ -70,23 +71,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         return const CircularProgressIndicator();
                       }
                       final devices = snapshot.data!.docs;
-                      return Card(
-                        margin: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: devices.map((device) {
-                            final deviceName = device['Name'];
-                            return ListTile(
-                              title: Text(deviceName),
-                              onTap: () {
-                                // Handle click event for device
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => DeviceControlScreen(deviceName: deviceName)),
+                      return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Card(
+                            margin: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: devices.map((device) {
+                                final deviceName = device['Name'];
+                                return ListTile(
+                                  title: Text(deviceName),
+                                  onTap: () {
+                                    // Handle click event for device
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => DeviceControlScreen(deviceName: deviceName)),
+                                    );
+                                  },
                                 );
-                              },
-                            );
-                          }).toList(),
-                        ),
+                              }).toList(),
+                            ),
+                          )
                       );
                     },
                   ),
@@ -107,22 +111,61 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
             SingleChildScrollView(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.location_on),
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => LocationSettingsScreen()));
-                      },
-                      label: const Text('Locations Settings'),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center, // Center the buttons vertically
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                              width: 200, // Set the desired width
+                              height: 48, // Set the desired height
+                              child: ElevatedButton.icon(
+                                icon: const Icon(Icons.location_on),
+                                onPressed: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => LocationSettingsScreen()));
+                                },
+                                label: const Text(
+                                  'Your Locations',
+                                  style: TextStyle(fontSize: 16.0),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 2,
+                                  padding: const EdgeInsets.all(12.0),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                              width: 200, // Set the desired width
+                              height: 48, // Set the desired height
+                              child: ElevatedButton.icon(
+                                icon: const Icon(Icons.palette),
+                                onPressed: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => ThemesScreen()));
+                                },
+                                label: const Text(
+                                  'Your Themes',
+                                  style: TextStyle(fontSize: 16.0),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 2,
+                                  padding: const EdgeInsets.all(12.0),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -146,7 +189,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           ],
         ),
-      )
     );
   }
 }
