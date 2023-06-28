@@ -20,6 +20,7 @@ Inside the app the user can do the following things:
 * ESP32: source code for the esp side (firmware).
 * wordclockapp : dart code for our Flutter app.
 * Parameters: contains description of configurable parameters 
+* Assets: Images used in this project.
 
 ## Arduino/ESP32 libraries used in this project:
 * Wifi
@@ -30,6 +31,7 @@ Inside the app the user can do the following things:
 * HTTPClient
 
 ## Project Poster:
+![plot]:(./Assets/Poster.png)
 
 This project is part of ICST - The Interdisciplinary Center for Smart Technologies, Taub Faculty of Computer Science, Technion
 https://icst.cs.technion.ac.il/
