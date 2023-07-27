@@ -16,7 +16,6 @@ class DeviceLocationsSettingScreen extends StatefulWidget {
 class _DeviceLocationsSettingScreen extends State<DeviceLocationsSettingScreen> {
   bool _enableChoose = false;
   double _elevation = 0;
-  int _selectedCardIndex = -1;
   String _selecetedCity = "";
   bool isStart = true;
 
@@ -52,7 +51,9 @@ class _DeviceLocationsSettingScreen extends State<DeviceLocationsSettingScreen> 
       appBar: AppBar(
         title: const Text('Location Settings'),
       ),
-      body: Column(
+      body:
+      SingleChildScrollView(
+        child: Column(
         children: [
           const SizedBox(height: 16),
           Row(
@@ -73,7 +74,6 @@ class _DeviceLocationsSettingScreen extends State<DeviceLocationsSettingScreen> 
                           _enableChoose = value!;
                           _selecetedCity = '';
                           _elevation = _enableChoose ? 4 : 0;
-                          _selectedCardIndex = 0;
                         });
                       },
                       activeColor: Colors.blueGrey[800], // Change the color of the check when the checkbox is selected
@@ -104,109 +104,100 @@ class _DeviceLocationsSettingScreen extends State<DeviceLocationsSettingScreen> 
           ),
           const SizedBox(height: 16),
           Visibility(
-            visible: _enableChoose,
-            child: StreamBuilder<QuerySnapshot>(
+          visible: _enableChoose,
+          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
                   .collection('user_preferences')
-                  .where('email', isEqualTo: FirebaseAuth.instance.currentUser?.email)
+                  .where('email',
+                  isEqualTo: FirebaseAuth.instance.currentUser?.email)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const CircularProgressIndicator();
                 }
                 final locations = snapshot.data!.docs;
-                if (isStart) {
-                  _selecetedCity = locations.first['locations'].first;
-                }
-                return Expanded(
-                  child: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: locations.length,
-                    itemBuilder: (context, index) {
-                      final location = locations[index];
-                      final List<String> locationsList =
-                      List<String>.from(location['locations']);
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: locationsList.length,
-                        itemBuilder: (context, index) {
-                          final locationItem = locationsList[index];
-                          if (_selecetedCity == locationItem) {
-                            _selectedCardIndex = index;
-                          }
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedCardIndex = index;
-                                isStart = false;
-                              });
-                            },
-                            child: Card(
-                              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
-                              color: _selectedCardIndex == index ? Colors.blue : null,
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      SizedBox(height: 16), // add this SizedBox widget
+                      ...locations.map((location) {
+                        final List<String> locationsList =
+                        List<String>.from(location.get('locations') ?? []);
+                        return Column(
+                          children: locationsList.map((locationItem) {
+                            return Card(
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 5, horizontal: 16),
+                              color: _selecetedCity == locationItem ? Colors
+                                  .blue : null,
                               child: ListTile(
                                 title: Row(
                                   children: [
-                                    Flag.fromString((locationItem.split(", ").last), height: 20, width: 30),
+                                    Flag.fromString(locationItem
+                                        .split(", ")
+                                        .last, height: 20, width: 30,),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: TextScroll(locationItem,
-                                        pauseBetween: const Duration(seconds:3),
+                                        pauseBetween: const Duration(
+                                            seconds: 3),
                                       ),
                                     ),
                                   ],
                                 ),
                                 onTap: () {
-                                  setState(() {
-                                    _selectedCardIndex = index;
-                                    _selecetedCity = locationItem;
-                                    isStart = false;
-                                  });
+                                  if (_enableChoose) {
+                                    setState(() {
+                                      _selecetedCity = locationItem;
+                                      isStart = false;
+                                    });
+                                  }
                                 },
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    },
+                            );
+                          }).toList(),
+                        );
+                      }).toList(),
+                    ],
                   ),
                 );
               },
+            )
+          ),
+          Container(
+            margin: const EdgeInsets.all(16),
+            child: TextButton(
+              onPressed: () async {
+                // Save the selected location and navigate back to the previous screen
+                final currentUser = FirebaseAuth.instance.currentUser;
+                String location = _enableChoose ? _selecetedCity : "Auto";
+                if (currentUser != null) {
+                  await FirebaseFirestore.instance
+                      .collection('devices')
+                      .where('email', isEqualTo: currentUser.email)
+                      .get()
+                      .then((querySnapshot) {
+                    querySnapshot.docs.forEach((documentSnapshot) {
+                      documentSnapshot.reference.update({'Location': location});
+                    });
+                  });
+                }
+                Navigator.of(context).pop();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white, backgroundColor: Colors.blueGrey[800], // Change the text color
+                padding: const EdgeInsets.symmetric(vertical: 16), // Add some padding
+                minimumSize: const Size(double.infinity, 0), // Set the minimum size to full width
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: const Text('Save'),
             ),
           ),
         ],
       ),
-        bottomNavigationBar: Container(
-          margin: const EdgeInsets.all(16),
-          child: TextButton(
-            onPressed: () async {
-              // Save the selected location and navigate back to the previous screen
-              final currentUser = FirebaseAuth.instance.currentUser;
-              String location = _enableChoose ? _selecetedCity : "Auto";
-              if (currentUser != null) {
-                await FirebaseFirestore.instance
-                    .collection('devices')
-                    .where('email', isEqualTo: currentUser.email)
-                    .get()
-                    .then((querySnapshot) {
-                  querySnapshot.docs.forEach((documentSnapshot) {
-                    documentSnapshot.reference.update({'Location': location});
-                  });
-                });
-              }
-              Navigator.of(context).pop();
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white, backgroundColor: Colors.blueGrey[800], // Change the text color
-              padding: const EdgeInsets.symmetric(vertical: 16), // Add some padding
-              minimumSize: const Size(double.infinity, 0), // Set the minimum size to full width
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: const Text('Save'),
-          ),
-        ),
+      ),
     );
   }
 }

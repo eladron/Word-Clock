@@ -92,23 +92,14 @@ class _AddNewThemeScreenState extends State<AddNewThemeScreen> {
 
 
   void saveTheme() async {
-
-    final userDoc = FirebaseFirestore.instance
-        .collection('user_preferences')
-        .where('email', isEqualTo: FirebaseAuth.instance.currentUser?.email)
-        .limit(1);
-    final userDocSnapshot = await userDoc.get();
-    final userDocRef = userDocSnapshot.docs.first.reference;
-    final themesMap = Map<String, dynamic>.from(userDocSnapshot.docs.first.get('Themes') ?? {});
-    print(themesMap.keys);
-    if (themesMap.containsKey(_themeNameController.text)) {
-      // Key exists in the map, display error message
+    if (_themeNameController.text.isEmpty) {
+      // Text is empty, display error message
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text("Error"),
-            content: Text("Theme already exists. Please choose another name."),
+            content: Text("Theme name should not be empty."),
             actions: [
               ElevatedButton(
                 child: Text("OK"),
@@ -120,11 +111,50 @@ class _AddNewThemeScreenState extends State<AddNewThemeScreen> {
           );
         },
       );
-    } else {
-      // Key does not exist in the map
-      themesMap[_themeNameController.text] = [_color1.red, _color1.green, _color1.blue, _color2.red, _color2.green, _color2.blue, _color3.red, _color3.green, _color3.blue];
-      await userDocRef.update({'Themes': themesMap});
-      Navigator.pop(context);
+    }
+    else {
+      final userDoc = FirebaseFirestore.instance
+          .collection('user_preferences')
+          .where('email', isEqualTo: FirebaseAuth.instance.currentUser?.email)
+          .limit(1);
+      final userDocSnapshot = await userDoc.get();
+      final userDocRef = userDocSnapshot.docs.first.reference;
+      final themesMap = Map<String, dynamic>.from(userDocSnapshot.docs.first.get('Themes') ?? {});
+      if (themesMap.containsKey(_themeNameController.text)) {
+        // Key exists in the map, display error message
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Error"),
+              content: const Text("Theme already exists. Please choose another name."),
+              actions: [
+                ElevatedButton(
+                  child: const Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        // Key does not exist in the map
+        themesMap[_themeNameController.text] = [
+          _color1.red,
+          _color1.green,
+          _color1.blue,
+          _color2.red,
+          _color2.green,
+          _color2.blue,
+          _color3.red,
+          _color3.green,
+          _color3.blue
+        ];
+        await userDocRef.update({'Themes': themesMap});
+        Navigator.pop(context);
+      }
     }
   }
 
@@ -134,174 +164,176 @@ class _AddNewThemeScreenState extends State<AddNewThemeScreen> {
       appBar: AppBar(
         title: const Text('Add New Theme'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            reusableTextForm('Theme Name', Icons.palette, _themeNameController),
-            const SizedBox(height: 16),
-            if (_selectedContainer == 1)
-              CustomColorPicker(
-                onColorChanged: (color) {
-                  setState(() {
-                    _color1 = color;
-                    _lastPressedColor = color;
-                  });
-                },
-                selectedColor: _lastPressedColor,
-                selectedDescription: "Words",
-              ),
-            if (_selectedContainer == 2)
-              CustomColorPicker(
-                onColorChanged: (color) {
-                  setState(() {
-                    _color2 = color;
-                    _lastPressedColor = color;
-                  });
-                },
-                selectedColor: _lastPressedColor,
-                selectedDescription: "Minutes Ascending",
-              ),
-            if (_selectedContainer == 3)
-              CustomColorPicker(
-                onColorChanged: (color) {
-                  setState(() {
-                    _color3 = color;
-                    _lastPressedColor = color;
-                  });
-                },
-                selectedColor: _lastPressedColor,
-                selectedDescription: "Minutes Descending",
-              ),
-            const SizedBox(height: 16,),
-            IntrinsicHeight(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedContainer = 1;
-                        _lastPressedColor = _color1;
-                      });
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: _color1,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 2,
-                                blurRadius: 5,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
+      body: SingleChildScrollView(
+       child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              reusableTextForm('Theme Name', Icons.palette, _themeNameController),
+              const SizedBox(height: 16),
+              if (_selectedContainer == 1)
+                CustomColorPicker(
+                  onColorChanged: (color) {
+                    setState(() {
+                      _color1 = color;
+                      _lastPressedColor = color;
+                    });
+                  },
+                  selectedColor: _lastPressedColor,
+                  selectedDescription: "Words",
+                ),
+              if (_selectedContainer == 2)
+                CustomColorPicker(
+                  onColorChanged: (color) {
+                    setState(() {
+                      _color2 = color;
+                      _lastPressedColor = color;
+                    });
+                  },
+                  selectedColor: _lastPressedColor,
+                  selectedDescription: "Minutes Ascending",
+                ),
+              if (_selectedContainer == 3)
+                CustomColorPicker(
+                  onColorChanged: (color) {
+                    setState(() {
+                      _color3 = color;
+                      _lastPressedColor = color;
+                    });
+                  },
+                  selectedColor: _lastPressedColor,
+                  selectedDescription: "Minutes Descending",
+                ),
+              const SizedBox(height: 16,),
+              IntrinsicHeight(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedContainer = 1;
+                          _lastPressedColor = _color1;
+                        });
+                      },
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: _color1,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            width: 50,
+                            height: 50,
                           ),
-                          width: 50,
-                          height: 50,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Words',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Words',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16,),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedContainer = 2;
-                        _lastPressedColor = _color2;
-                      });
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: _color2,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 2,
-                                blurRadius: 5,
-                                offset: Offset(0, 3),
-                              ),
-                            ],
+                    const SizedBox(width: 16,),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedContainer = 2;
+                          _lastPressedColor = _color2;
+                        });
+                      },
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: _color2,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            width: 50,
+                            height: 50,
                           ),
-                          width: 50,
-                          height: 50,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Minutes\nAscending',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Minutes\nAscending',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16,),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedContainer = 3;
-                        _lastPressedColor = _color3;
-                      });
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: _color3,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 2,
-                                blurRadius: 5,
-                                offset: Offset(0, 3),
-                              ),
-                            ],
+                    const SizedBox(width: 16,),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedContainer = 3;
+                          _lastPressedColor = _color3;
+                        });
+                      },
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: _color3,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            width: 50,
+                            height: 50,
                           ),
-                          width: 50,
-                          height: 50,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Minutes\nDescending',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Minutes\nDescending',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: saveTheme,
-              child: const Text('Save Theme'),
-            ),
-          ],
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: saveTheme,
+                child: const Text('Save Theme'),
+              ),
+            ],
+          ),
         ),
-      ),
+      )
     );
   }
 }

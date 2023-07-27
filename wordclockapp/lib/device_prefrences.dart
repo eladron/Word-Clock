@@ -131,7 +131,9 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     if (enableNightTheme) {
       String st = "${selectedStartTime?.hour}:${selectedStartTime?.minute}";
       String et = "${selectedEndTime?.hour}:${selectedEndTime?.minute}";
-      message += ", \"StartTime\":\"$st\", \"EndTime\":\"$et\", \"Night\":\"${themeToJo(themes[nightThemeSelected])}\"";
+      message += ", \"StartHour\":${selectedStartTime?.hour}, \"StartMinute\":${selectedStartTime?.minute},";
+      message += "\"EndHour\":${selectedEndTime?.hour}, \"EndMinute\":${selectedEndTime?.minute},";
+      message += " \"Night\":${themeToJo(themes[nightThemeSelected])}";
     }
     message += "}";
     print(message);
