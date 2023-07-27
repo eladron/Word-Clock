@@ -24,10 +24,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     String username = _usernameController.text;
     String password = _passwordController.text;
     await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password).then((value) async {
-      await FirebaseFirestore.instance.collection("users").doc(value.user!.uid).set( {
+      await FirebaseFirestore.instance.collection("user_preferences").doc(value.user!.uid).set( {
         'email': email,
         'username': username,
-        'devices': [],
+        'Themes' : {},
+        'location' : []
       });
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
       User? user = value.user;
