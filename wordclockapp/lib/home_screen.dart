@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
     Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
-        const LoginScreen(ignoreRememberMe: true,)), (Route<dynamic> route) => false);
+        const LoginScreen(ignoreRememberMe: true,)), (route) => false);
   }
 
   @override

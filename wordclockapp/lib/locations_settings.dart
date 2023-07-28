@@ -158,28 +158,6 @@ class _LocationSettingsScreenState extends State<LocationSettingsScreen> {
                                 onTap: () {},
                               ),
                             );
-                            return Card(
-                              margin: const EdgeInsets.symmetric(
-                                  vertical: 5, horizontal: 16),
-                              child: ListTile(
-                                leading: const Icon(Icons.location_city),
-                                title: Row(
-                                  children: [
-                                    Flag.fromString(_getCountryCode(locationItem), height: 20, width: 30),
-                                    const SizedBox(width: 10),
-                                    TextScroll(locationItem),
-                                  ],
-                                ),
-                                trailing: IconButton(
-                                  onPressed: () {
-                                    _showRemoveLocationDialog(
-                                        location, locationItem);
-                                  },
-                                  icon: const Icon(Icons.remove),
-                                ),
-                                onTap: () {},
-                              ),
-                            );
                           }).toList(),
                         );
                       }).toList(),

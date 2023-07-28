@@ -58,7 +58,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       themes = fetchedThemes; // Assign the fetched themes to the 'themes' list
       index = List.generate(themes.length, (index) => index);
     });
-    await retrieveDevicePreference();
+    retrieveDevicePreference();
   }
 
   Future<void> retrieveDevicePreference() async
@@ -199,7 +199,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Card(
               child: Column(
                 children: [
@@ -227,7 +227,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                           });
                         }
                       },
-                      child: Text('Pick Start Time'),
+                      child: const Text('Pick Start Time'),
                     ),
                     if (enableNightTheme && selectedStartTime != null)
                       Text('Start Time: ${selectedStartTime!.format(context)}'),
@@ -244,7 +244,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                           });
                         }
                       },
-                      child: Text('Pick End Time'),
+                      child: const Text('Pick End Time'),
                     ),
                     if (enableNightTheme && selectedEndTime != null)
                       Text('End Time: ${selectedEndTime!.format(context)}'),

@@ -24,20 +24,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
     String username = _usernameController.text;
     String password = _passwordController.text;
     await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password).then((value) async {
-      await FirebaseFirestore.instance.collection("users").doc(value.user!.uid).set( {
+      await FirebaseFirestore.instance.collection("user_preferences").doc(value.user!.uid).set( {
         'email': email,
         'username': username,
-        'devices': [],
+        'Themes' : {},
+        'location' : []
       });
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
       User? user = value.user;
       if (user != null){
-        print("updating display_name");
         user.updateDisplayName(username);
       }
       Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
     }).onError((error, stackTrace) {
-      print("Error ${error.toString()}");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Error:${error.toString().split(']').last}"),
+      ));
+      return;
     });
   }
 

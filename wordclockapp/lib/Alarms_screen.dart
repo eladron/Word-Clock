@@ -12,10 +12,10 @@ class AlarmScreen extends StatefulWidget {
 }
 
 class _AlarmScreenState extends State<AlarmScreen> {
-  int _selectedHour = 0;
-  int _selectedMinute = 0;
+  TimeOfDay _selectedTime = TimeOfDay.now();
   int daySelected = 0;
   bool isLoading = false;
+  bool _selected = false;
 
 
   final hours = List.generate(24, (index) => index);
@@ -85,8 +85,8 @@ class _AlarmScreenState extends State<AlarmScreen> {
             onTap: (index) {
               setState(() {
                 daySelected = 0;
-                _selectedHour = 0;
-                _selectedMinute = 0;
+                _selected = false;
+                _selectedTime = TimeOfDay.now();
               });
             },
           ),
@@ -175,87 +175,23 @@ class _AlarmScreenState extends State<AlarmScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                     const SizedBox(height: 10,),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                              children: [
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(' Hour', style: TextStyle(fontSize: 16)),
-                                ),
-                                DropdownButtonFormField<int>(
-                                  decoration: InputDecoration(
-                                    border: const OutlineInputBorder(),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.white),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.blue),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  value: _selectedHour,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedHour = value!;
-                                    });
-                                  },
-                                  items: hours.map((hour) {
-                                    return DropdownMenuItem<int>(
-                                      value: hour,
-                                      child: Text(hour.toString()),
-                                    );
-                                  }).toList(),
-                                ),
-                              ]
-                          ),
-                        ),
-                        const SizedBox(width: 40,),
-                        Expanded(
-                          child: Column(
-                              children: [
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(' Minute', style: TextStyle(fontSize: 16)),
-                                ),
-                                DropdownButtonFormField<int>(
-                                  decoration: InputDecoration(
-                                    border: const OutlineInputBorder(),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.white),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.blue),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  value: _selectedMinute,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedMinute = value!;
-                                    });
-                                  },
-                                  items: minutes.map((minute) {
-                                    return DropdownMenuItem<int>(
-                                      value: minute,
-                                      child: Text(minute.toString()),
-                                    );
-                                  }).toList(),
-                                ),
-                              ]
-                          ),
-                        ),
-                      ],
-                    ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final selectedTime = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (selectedTime != null) {
+                        setState(() {
+                          _selected = true;
+                          _selectedTime = selectedTime;
+                        });
+                      }
+                    },
+                    child: const Text('Pick Alarm Time'),
+                  ),
+                  if (_selected)
+                    Text('Alarm Time: ${_selectedTime!.format(context)}'),
                   const SizedBox(height: 16),
                   Column(
                       children: [
@@ -400,7 +336,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
     setState(() {
       isLoading = false;
     });
-    if (res != 1) {
+    if (res != 0) {
         await showAlertDialog("Can't connect to the clock. Make sure the clock is on and Bluetooth is on");
         return;
     }
@@ -408,12 +344,19 @@ class _AlarmScreenState extends State<AlarmScreen> {
 
     setState(() {
       daySelected = 0;
-      _selectedHour = 0;
-      _selectedMinute = 0;
+      _selected = false;
+      _selectedTime = TimeOfDay.now();
     });
   }
 
   Future<void> _addAlarm() async {
+
+    if (!_selected) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("You didn't picked time for the alarm."),
+      ));
+      return;
+    }
 
     final userDoc = FirebaseFirestore.instance
         .collection('devices')
@@ -434,8 +377,8 @@ class _AlarmScreenState extends State<AlarmScreen> {
     //Send location to the device and see if it is earlier than current time.
 
     final selectedDay = daysOfWeek[daySelected];
-    final selectedHour = _selectedHour.toString();
-    final selectedMinute = _selectedMinute.toString();
+    final selectedHour = _selectedTime.hour;
+    final selectedMinute = _selectedTime.minute;
 
     final alarmStr = "$selectedDay - $selectedHour:$selectedMinute";
 
@@ -455,8 +398,8 @@ class _AlarmScreenState extends State<AlarmScreen> {
 
     setState(() {
       daySelected = 0;
-      _selectedHour = 0;
-      _selectedMinute = 0;
+      _selected = false;
+      _selectedTime = TimeOfDay.now();
     });
   }
 }
