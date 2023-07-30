@@ -1,10 +1,10 @@
 #include "time.h"
 #include "sntp.h"
 
-long  gmtOffset_sec = 7200;
+long  gmtOffset_sec = 7200; // The number of seconds offset from GMT (Greenwich Mean Time) for the device's local time zone.
 unsigned long time_timer = -1000;
 unsigned long time_timer_delay = -time_timer;
-int alarmCount = 0;
+int alarmCount = 0; // Number of alarms
 bool isAlarm = false;
 int indexAlarm = -1;
 String alarmToStop = "";

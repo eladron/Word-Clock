@@ -42,34 +42,32 @@ void setup_neopixel()
 
 }
 
-//Sets the light in range a and b
+// Sets the light in all the lights from "a" to "b"
 void setLightinRange(int a, int b, uint32_t c = GREEN) {
   for (int i=a; i<= b; i++) {
     pixels.setPixelColor(i, c);
   }
 }
 
-/*
-Sets the light in the words It,Is and O'clock
-*/
+
+// Sets the light in the words It,Is and O'clock
 void setItIsOclock() {
   pixels.setPixelColor(62, day_words_color);
   pixels.setPixelColor(61, day_words_color);
   setLightinRange(13,15, day_words_color);
 }
 
+
 void setMinutes(int minute) {
-  // Past
   auto specific_color = day_asc_color;
   auto words_color = day_words_color;
-  // if is_night
-  // { words_color = night_words_color;
-  // }
+
+  // We want to light "Past"
   if (5 <= minute && minute <= 30) {
     setLightinRange(37,38, words_color);
   }
-  // TO
   else if (31 <= minute) {
+    // We want to lght "To"
     if (minute <= 55) {
       setLightinRange(44,44, words_color);
     }
@@ -106,11 +104,13 @@ void setMinutes(int minute) {
   default:
     break;
   }
-  //Minutes
+
+  // We want to light "Minutes"
   if (minute != 0 && minute != 30 && minute != 15) {
     setLightinRange(45,47, words_color);
   }
 }
+
 
 void setHour(int hour)
 {
@@ -158,6 +158,7 @@ void setHour(int hour)
   }
 }
 
+// Turns off all the lights that light time
 void clear_time_lights() 
 {
   for (int i=6; i<= 62; i++) {
@@ -166,6 +167,7 @@ void clear_time_lights()
   pixels.show();
 }
 
+// Turn on the lights to present the time specified as input
 void light_time(int hour, int minute)
 {
   clear_time_lights();
@@ -176,6 +178,7 @@ void light_time(int hour, int minute)
   setHour(hour);
   pixels.show();   // Send the updated pixel colors to the hardware.
 }
+
 
 void temperature_to_color(int temp) 
 {
@@ -188,6 +191,7 @@ void temperature_to_color(int temp)
   pixels.show();
 }
 
+// Turns on the light of the alarm
 void light_alarm() 
 {
   pixels.setPixelColor(ALARMLIGHT, YELLOW);
@@ -195,12 +199,14 @@ void light_alarm()
   isAlarmOn = true;
 }
 
+// Turns off the light of the alarm
 void clear_alarm() 
 {
   pixels.setPixelColor(ALARMLIGHT,NONCOLOR);
   pixels.show();
   isAlarmOn = false;  
 }
+
 
 void show_all_lights()
 {
@@ -216,6 +222,7 @@ void show_all_lights()
   delay(500);
 }
 
+
 void clear_weather()
 {
   for (int i=0; i<=3; i++) 
@@ -224,6 +231,7 @@ void clear_weather()
   }
 }
 
+// Light that shows device is not connected to WIFI
 void wifi_not_connected() 
 {
   clear_weather();
@@ -233,31 +241,37 @@ void wifi_not_connected()
   pixels.show();
 }
 
+// Light that shows device is connected to WIFI
 void wifi_connected()
 {
   pixels.setPixelColor(WIFILIGHT, WIFION);
   pixels.show();
 }
 
+
 void setWeatherLights(int temp, int wc) {
   clear_weather();
   int code = wc / 100;
-  //Clear
+
+  // Clear
   if (wc == 800) {
     pixels.setPixelColor(CLEARLIGHT, CLEARCOLD);
     if (temp >=23) {
       pixels.setPixelColor(CLEARLIGHT, WARM);
     }
   }
+  // Cloudy
   else if (code == 8 || code == 7) {
     pixels.setPixelColor(CLOUDYLIGHT, GREY);
   }
   else if (code == 6) {
     pixels.setPixelColor(CLOUDYLIGHT, WHITE);
   }
+  // Rain
   else if (code == 5 || code == 3) {
     pixels.setPixelColor(RAINLIGHT, MIDNIGHTBLUE);
   }
+  // Thunderstorm
   else {
     pixels.setPixelColor(THUNDERLIGHT, THUNDER);
   }

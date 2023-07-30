@@ -18,16 +18,18 @@ String httpGETRequest(const char* serverName) {
   // Your Domain name with URL path or IP address with path
   http.begin(client, serverName);
   
-  // Send HTTP POST request
+  // Send HTTP GET request
   int httpResponseCode = http.GET();
   
   String payload = "{}"; 
   
+  // Status code OK
   if (httpResponseCode>0) {
     Serial.print("HTTP Response code: ");
     Serial.println(httpResponseCode);
     payload = http.getString();
   }
+  // Error
   else {
     Serial.print("Error code: ");
     Serial.println(httpResponseCode);
