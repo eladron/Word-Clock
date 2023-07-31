@@ -31,7 +31,7 @@ Inside the app the user can do the following things:
 * HTTPClient
 
 ## Project Poster:
-![plot]:(./Assets/Poster.png)
+![Poster](https://github.com/eladron/Word-Clock/assets/63602693/2f42870e-4599-49ff-a60b-db957dfc39a1)
 
 This project is part of ICST - The Interdisciplinary Center for Smart Technologies, Taub Faculty of Computer Science, Technion
 https://icst.cs.technion.ac.il/
